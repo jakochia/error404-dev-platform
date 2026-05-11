@@ -2,24 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>⚡ 404::DEVCORE | Neural Glitch Network</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      cursor: none;
     }
 
+    /* Optimized cursors - hidden on touch devices automatically */
     body {
       background: #05070f;
       font-family: 'Inter', 'JetBrains Mono', monospace;
       overflow-x: hidden;
       color: #eef5ff;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    /* custom cursor */
+    /* Hide custom cursors on touch devices & small screens for performance */
+    @media (max-width: 768px), (pointer: coarse) {
+      .cursor-dot, .cursor-follower {
+        display: none !important;
+      }
+      body {
+        cursor: auto;
+      }
+    }
+
     .cursor-follower {
       position: fixed;
       width: 28px;
@@ -43,7 +53,7 @@
       transition: 0.05s linear;
     }
 
-    /* canvas particles background */
+    /* canvas particles background - optimized */
     #particle-canvas {
       position: fixed;
       top: 0;
@@ -52,9 +62,10 @@
       height: 100%;
       z-index: 0;
       display: block;
+      will-change: transform;
     }
 
-    /* scanline overlay */
+    /* scanline overlay (lightweight) */
     .scan-line {
       position: fixed;
       top: 0;
@@ -81,7 +92,7 @@
       z-index: 20;
       max-width: 1400px;
       margin: 0 auto;
-      padding: 1.5rem 2rem 3rem;
+      padding: 1rem 1.2rem 2rem;
     }
 
     /* header with neon pulse */
@@ -90,31 +101,33 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 15px;
+      gap: 12px;
       backdrop-filter: blur(16px);
       background: rgba(5, 10, 25, 0.5);
       border-radius: 2rem;
-      padding: 0.7rem 1.8rem;
+      padding: 0.6rem 1.3rem;
       border: 1px solid rgba(255, 26, 110, 0.5);
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
       box-shadow: 0 0 12px rgba(255, 26, 110, 0.2);
     }
 
     .badge-glitch {
       font-family: monospace;
       background: #ff1a6e20;
-      padding: 0.3rem 1.1rem;
+      padding: 0.3rem 1rem;
       border-radius: 2rem;
       border-left: 3px solid #ff1a6e;
       font-weight: 600;
       letter-spacing: 1px;
+      font-size: 0.85rem;
     }
 
     .sys-stats {
       display: flex;
-      gap: 20px;
-      font-size: 0.75rem;
+      gap: 16px;
+      font-size: 0.7rem;
       font-family: monospace;
+      flex-wrap: wrap;
     }
 
     .sys-stats span {
@@ -122,10 +135,10 @@
       text-shadow: 0 0 5px #0ff;
     }
 
-    /* hero 3d tilt section */
+    /* hero 3d tilt section - simplified on mobile */
     .hero-zone {
       text-align: center;
-      margin: 2rem 0 2rem;
+      margin: 1rem 0 1.5rem;
       position: relative;
     }
 
@@ -142,6 +155,7 @@
       background-clip: text;
       color: transparent;
       text-shadow: 0 0 18px #ff1a6e80;
+      transition: transform 0.1s ease-out;
     }
 
     @keyframes glitchText {
@@ -155,16 +169,19 @@
     .error-png-symbol {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(20px);
-      padding: 0.6rem 1.6rem;
+      padding: 0.5rem 1.3rem;
       border-radius: 60px;
       border: 1px solid #ff1a6e;
-      margin: 20px 0;
+      margin: 18px 0;
       font-family: monospace;
       font-weight: bold;
       animation: pulseBorder 1.8s infinite;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 0.85rem;
     }
 
     @keyframes pulseBorder {
@@ -174,7 +191,7 @@
     }
 
     .neon-tagline {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
       background: linear-gradient(120deg, #fff, #ffb3d1);
       background-clip: text;
       -webkit-background-clip: text;
@@ -182,18 +199,18 @@
       font-weight: 500;
     }
 
-    /* terminal mimic */
+    /* terminal mimic - fully responsive */
     .live-terminal {
       background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(12px);
       border-radius: 24px;
-      padding: 1rem 1.5rem;
+      padding: 0.9rem 1.2rem;
       max-width: 550px;
-      margin: 1.8rem auto;
+      margin: 1.5rem auto;
       border: 1px solid rgba(0, 240, 255, 0.6);
       text-align: left;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       box-shadow: 0 10px 25px -8px black;
     }
 
@@ -211,6 +228,7 @@
 
     .typed-msg {
       color: #ffb86b;
+      word-break: break-word;
     }
 
     .cursor-block {
@@ -229,59 +247,55 @@
     .btn-magnetic {
       background: linear-gradient(145deg, #ff004c, #b00035);
       border: none;
-      padding: 14px 40px;
+      padding: 12px 32px;
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1rem;
       border-radius: 60px;
       color: white;
       transition: all 0.2s ease;
-      margin-top: 18px;
+      margin-top: 12px;
       box-shadow: 0 0 12px #ff004c;
       position: relative;
       overflow: hidden;
       cursor: pointer;
+      display: inline-block;
+      touch-action: manipulation;
     }
 
-    .btn-magnetic:hover {
-      transform: scale(1.03);
+    .btn-magnetic:active {
+      transform: scale(0.97);
       background: linear-gradient(145deg, #00c3ff, #0077aa);
-      box-shadow: 0 0 28px #00f0ff;
-      letter-spacing: 1.5px;
     }
 
-    /* card grid */
+    /* card grid mobile friendly */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 28px;
-      margin: 4rem 0 2rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin: 3rem 0 1.5rem;
     }
 
     .cyber-card {
       background: rgba(8, 12, 28, 0.55);
       backdrop-filter: blur(12px);
       border-radius: 28px;
-      padding: 26px 20px;
+      padding: 22px 18px;
       border: 1px solid rgba(255, 26, 110, 0.3);
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      transform-style: preserve-3d;
+      transition: all 0.25s ease;
     }
 
-    .cyber-card:hover {
-      border-color: #0ff;
-      transform: translateY(-8px) scale(1.01);
-      background: rgba(15, 22, 45, 0.8);
-      box-shadow: 0 20px 35px -12px #0ff30;
+    .cyber-card:active {
+      transform: scale(0.98);
     }
 
     .card-icon {
-      font-size: 2.8rem;
-      margin-bottom: 12px;
+      font-size: 2.4rem;
+      margin-bottom: 10px;
       filter: drop-shadow(0 0 4px #ff1a6e);
     }
 
     .cyber-card h3 {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       margin-bottom: 8px;
       background: linear-gradient(145deg, #fff, #ff8db5);
       background-clip: text;
@@ -290,34 +304,52 @@
     }
 
     .cyber-card p {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       opacity: 0.85;
+      line-height: 1.4;
     }
 
     footer {
       text-align: center;
-      padding: 2rem;
+      padding: 1.5rem;
       border-top: 1px dashed rgba(255, 26, 110, 0.4);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
     }
 
-    @media (max-width: 780px) {
+    @media (max-width: 680px) {
       .main-wrapper {
-        padding: 1rem;
+        padding: 0.8rem 1rem 1.5rem;
       }
       .neon-header {
         flex-direction: column;
         align-items: center;
+        gap: 8px;
       }
       .terminal-line {
         font-size: 0.7rem;
+      }
+      .sys-stats {
+        justify-content: center;
+      }
+      .error-png-symbol {
+        font-size: 0.7rem;
+        padding: 0.4rem 1rem;
+      }
+      .btn-magnetic {
+        width: 80%;
+        max-width: 260px;
+        font-size: 0.95rem;
+        padding: 12px 20px;
+      }
+      .cyber-card {
+        padding: 18px 16px;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- cursor effects -->
+  <!-- cursor elements (hidden automatically on mobile via CSS) -->
   <div class="cursor-dot"></div>
   <div class="cursor-follower"></div>
 
@@ -339,7 +371,6 @@
 
     <div class="hero-zone">
       <div class="glitch-404" data-text="404">404</div>
-      <!-- error.png reference integrated as interactive chip -->
       <div class="error-png-symbol">
         <span>📁 error.png</span>
         <span style="color:#ff1a6e;">⚠️ 404 NOT FOUND</span>
@@ -359,7 +390,7 @@
       <button class="btn-magnetic" id="enterGridBtn">⟢ ENTER THE GRID ⟣</button>
     </div>
 
-    <!-- Feature cards with modern styling -->
+    <!-- Feature cards -->
     <div class="card-grid">
       <div class="cyber-card"><div class="card-icon">🧩</div><h3>Debug Arena</h3><p>Fix broken code, earn XP, climb global leaderboards. Real-time duels.</p></div>
       <div class="cyber-card"><div class="card-icon">📝</div><h3>Dev Blogs</h3><p>Write bug diaries, tutorials, and tech humor. Share your rebellion.</p></div>
@@ -377,181 +408,297 @@
   </div>
 
   <script>
-    // ---------- CURSOR FOLLOW ----------
-    const cursorDot = document.querySelector('.cursor-dot');
-    const cursorFollower = document.querySelector('.cursor-follower');
-    document.addEventListener('mousemove', (e) => {
-      cursorDot.style.transform = `translate(${e.clientX - 3}px, ${e.clientY - 3}px)`;
-      cursorFollower.style.transform = `translate(${e.clientX - 14}px, ${e.clientY - 14}px)`;
-    });
-    document.addEventListener('mouseleave', () => {
-      cursorDot.style.opacity = '0';
-      cursorFollower.style.opacity = '0';
-    });
-    document.addEventListener('mouseenter', () => {
-      cursorDot.style.opacity = '1';
-      cursorFollower.style.opacity = '1';
-    });
-
-    // ---------- PARTICLE NETWORK (3Dish) ----------
-    const canvas = document.getElementById('particle-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let particles = [];
-    const PARTICLE_COUNT = 110;
-    const CONNECT_DIST = 150;
-
-    function resizeCanvas() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-    }
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.3;
-        this.size = Math.random() * 2 + 1.2;
-        this.color = `rgba(255, ${Math.floor(80 + Math.random() * 100)}, 150, ${Math.random() * 0.6 + 0.2})`;
+    (function() {
+      // ---------- PERFORMANCE DETECTION (MOBILE FRIENDLY) ----------
+      const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const lowPerfMode = isMobile || isTouch || window.innerWidth < 900;
+      
+      // ---------- DYNAMIC PARTICLE SYSTEM OPTIMIZED FOR MOBILE ----------
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+      let animationFrameId = null;
+      
+      // Adaptive settings based on device performance
+      const getOptimalParticleCount = () => {
+        if (lowPerfMode) return 38;        // mobile/tablet super smooth
+        if (window.innerWidth < 1200) return 70;
+        return 100;
+      };
+      
+      const getConnectDistance = () => lowPerfMode ? 95 : 150;
+      const useShadowBlur = !lowPerfMode;   // disable shadow on mobile for better FPS
+      const getParticleSpeed = () => lowPerfMode ? 0.28 : 0.45;
+      
+      let CONNECT_DIST = getConnectDistance();
+      let PARTICLE_COUNT = getOptimalParticleCount();
+      
+      function resizeCanvas() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
       }
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = '#ff1a6e';
-      }
-    }
-
-    function initParticles() {
-      particles = [];
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        particles.push(new Particle());
-      }
-    }
-
-    function drawLines() {
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < CONNECT_DIST) {
-            const opacity = (1 - dist / CONNECT_DIST) * 0.25;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(0, 220, 255, ${opacity})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
+      
+      class Particle {
+        constructor(speedFactor = 0.4) {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * speedFactor;
+          this.vy = (Math.random() - 0.5) * (speedFactor * 0.7);
+          this.size = lowPerfMode ? (Math.random() * 1.8 + 0.8) : (Math.random() * 2 + 1.2);
+          // brighter but lightweight colors
+          const r = 255;
+          const g = Math.floor(80 + Math.random() * 100);
+          const b = 150 + Math.random() * 55;
+          this.color = `rgba(${r}, ${g}, ${b}, ${lowPerfMode ? 0.5 : 0.7})`;
+        }
+        update(speedMul = 0.5) {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0) this.x = width;
+          if (this.x > width) this.x = 0;
+          if (this.y < 0) this.y = height;
+          if (this.y > height) this.y = 0;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+          if (useShadowBlur) {
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = '#ff1a6e';
+          } else {
+            ctx.shadowBlur = 0;
           }
         }
       }
-    }
-
-    function animateParticles() {
-      if (!ctx) return;
-      ctx.clearRect(0, 0, width, height);
-      for (let p of particles) {
-        p.update();
-        p.draw();
-      }
-      drawLines();
-      requestAnimationFrame(animateParticles);
-    }
-
-    window.addEventListener('resize', () => {
-      resizeCanvas();
-      initParticles();
-    });
-    resizeCanvas();
-    initParticles();
-    animateParticles();
-
-    // Terminal dynamic message sequence (very engaging)
-    const terminalMsgElem = document.getElementById('terminalText');
-    const messages = [
-      ">_ error.png not found... but rebellion loaded.",
-      ">_ scanning for bugs: 0x7E1 vulnerabilities patched",
-      ">_ injecting neon_glitch... complete.",
-      ">_ 404 developers active, join the grid.",
-      ">_ where bugs become legends | access granted"
-    ];
-    let msgIndex = 0;
-    function cycleTerminalMessages() {
-      if (!terminalMsgElem) return;
-      let fullMsg = messages[msgIndex];
-      let i = 0;
-      function typeChar() {
-        if (i <= fullMsg.length) {
-          terminalMsgElem.textContent = fullMsg.substring(0, i);
-          i++;
-          setTimeout(typeChar, 45);
-        } else {
-          setTimeout(() => {
-            msgIndex = (msgIndex + 1) % messages.length;
-            cycleTerminalMessages();
-          }, 2800);
+      
+      function initParticles() {
+        const speedVal = getParticleSpeed();
+        particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          particles.push(new Particle(speedVal));
         }
       }
-      typeChar();
-    }
-    cycleTerminalMessages();
-
-    // Magnetic button effect + redirect
-    const btn = document.getElementById('enterGridBtn');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        // simulated awesome transition before redirect 
-        btn.textContent = '⟢ BOOTING... ⟣';
-        btn.style.opacity = '0.8';
+      
+      function drawLines() {
+        const maxDist = CONNECT_DIST;
+        const lineOpacityBase = lowPerfMode ? 0.2 : 0.28;
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < maxDist * maxDist) {
+              const dist = Math.sqrt(distSq);
+              const opacity = (1 - dist / maxDist) * lineOpacityBase;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(0, 210, 255, ${opacity * 0.9})`;
+              ctx.lineWidth = lowPerfMode ? 0.5 : 0.7;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+      
+      let lastTimestamp = 0;
+      function animateParticles(timestamp) {
+        if (!ctx) return;
+        // optional frame throttling for very low-end? but requestAnimationFrame is fine
+        ctx.clearRect(0, 0, width, height);
+        for (let p of particles) {
+          p.update();
+          p.draw();
+        }
+        drawLines();
+        animationFrameId = requestAnimationFrame(animateParticles);
+      }
+      
+      function resetParticleSystem() {
+        PARTICLE_COUNT = getOptimalParticleCount();
+        CONNECT_DIST = getConnectDistance();
+        initParticles();
+      }
+      
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        resetParticleSystem();
+      });
+      
+      resizeCanvas();
+      resetParticleSystem();
+      animateParticles();
+      
+      // ---------- CURSOR & INTERACTIVE EFFECTS (DISABLED ON MOBILE) ----------
+      if (!lowPerfMode && !isTouch) {
+        // custom cursor only for desktop
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        if (cursorDot && cursorFollower) {
+          document.addEventListener('mousemove', (e) => {
+            cursorDot.style.transform = `translate(${e.clientX - 3}px, ${e.clientY - 3}px)`;
+            cursorFollower.style.transform = `translate(${e.clientX - 14}px, ${e.clientY - 14}px)`;
+          });
+          document.addEventListener('mouseleave', () => {
+            cursorDot.style.opacity = '0';
+            cursorFollower.style.opacity = '0';
+          });
+          document.addEventListener('mouseenter', () => {
+            cursorDot.style.opacity = '1';
+            cursorFollower.style.opacity = '1';
+          });
+        }
+        
+        // 3D Tilt effect for 404 text (only desktop for performance)
+        const glitchEl = document.querySelector('.glitch-404');
+        if (glitchEl) {
+          document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+            glitchEl.style.transform = `rotateX(${yAxis * 0.3}deg) rotateY(${xAxis * 0.3}deg) translateZ(6px)`;
+          });
+        }
+        
+        // Magnetic button effect only for desktop (avoid touch conflicts)
+        const btn = document.getElementById('enterGridBtn');
+        if (btn) {
+          btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.02)`;
+          });
+          btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translate(0px, 0px) scale(1)';
+          });
+        }
+      } else {
+        // On mobile, remove any active transforms from 404 tilt to save resources
+        const glitchEl = document.querySelector('.glitch-404');
+        if (glitchEl) glitchEl.style.transform = 'none';
+        // Remove magnetic hover style for button, fallback to normal
+        const btnMobile = document.getElementById('enterGridBtn');
+        if (btnMobile) {
+          btnMobile.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.97)';
+          }, {passive: true});
+          btnMobile.addEventListener('touchend', function() {
+            this.style.transform = '';
+          });
+        }
+      }
+      
+      // ----- BUTTON REDIRECT (shared logic) -----
+      const enterBtn = document.getElementById('enterGridBtn');
+      if (enterBtn) {
+        enterBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          enterBtn.textContent = '⟢ BOOTING... ⟣';
+          enterBtn.style.opacity = '0.8';
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 480);
+        });
+      }
+      
+      // ----- TERMINAL DYNAMIC TYPING (optimized with better timeout cleanup) -----
+      const terminalMsgElem = document.getElementById('terminalText');
+      if (terminalMsgElem) {
+        const messages = [
+          ">_ error.png not found... but rebellion loaded.",
+          ">_ scanning for bugs: 0x7E1 vulnerabilities patched",
+          ">_ injecting neon_glitch... complete.",
+          ">_ 404 developers active, join the grid.",
+          ">_ where bugs become legends | access granted"
+        ];
+        let msgIndex = 0;
+        let currentTimeout = null;
+        let typeTimeout = null;
+        
+        function typeMessage(fullMsg, callback) {
+          let i = 0;
+          function typeChar() {
+            if (i <= fullMsg.length) {
+              terminalMsgElem.textContent = fullMsg.substring(0, i);
+              i++;
+              typeTimeout = setTimeout(typeChar, 42);
+            } else if (callback) {
+              callback();
+            }
+          }
+          typeChar();
+        }
+        
+        function cycleMessages() {
+          if (currentTimeout) clearTimeout(currentTimeout);
+          const fullMsg = messages[msgIndex];
+          typeMessage(fullMsg, () => {
+            currentTimeout = setTimeout(() => {
+              msgIndex = (msgIndex + 1) % messages.length;
+              cycleMessages();
+            }, 2700);
+          });
+        }
+        
+        cycleMessages();
+        
+        // cleanup on page unload just to be safe
+        window.addEventListener('beforeunload', () => {
+          if (typeTimeout) clearTimeout(typeTimeout);
+          if (currentTimeout) clearTimeout(currentTimeout);
+        });
+      }
+      
+      // ----- GLITCH EFFECT ON PNG SYMBOL (lightweight random skew) -----
+      const pngMock = document.querySelector('.error-png-symbol');
+      if (pngMock) {
+        let glitchInterval = setInterval(() => {
+          if (!document.body.contains(pngMock)) {
+            clearInterval(glitchInterval);
+            return;
+          }
+          pngMock.style.transform = 'skew(1deg, 0.5deg)';
+          setTimeout(() => { 
+            if (pngMock) pngMock.style.transform = ''; 
+          }, 100);
+        }, 4200);
+        // store interval for potential cleanup
+        window.addEventListener('beforeunload', () => clearInterval(glitchInterval));
+      }
+      
+      // ---------- ADDITIONAL MOBILE OPTIMIZATION: Reduce canvas frame rate dynamically if battery? Not needed ----------
+      // ensure canvas does not cause overflow repaints
+      if (lowPerfMode) {
+        // reduce the line complexity even further with fewer particles already active
+        // add an extra friendly hint: disable expensive css filter on canvas but none.
+        const style = document.createElement('style');
+        style.textContent = `#particle-canvas { image-rendering: crisp-edges; } .cyber-card { transition: none; } .cyber-card:active { transform: scale(0.98); }`;
+        document.head.appendChild(style);
+      }
+      
+      // small throttle: if low memory we ensure canvas isn't drawn when tab hidden, but rAF stops automatically.
+      // Also cleanup animation on page unload
+      window.addEventListener('beforeunload', () => {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      });
+      
+      // console log just for style
+      console.log("%c🔥 ERROR 404 // MOBILE OPTIMIZED // GLITCH PERFORMANCE READY 🔥", "color: #ff1a6e; font-size: 14px; font-weight: bold; font-family: monospace");
+      
+      // reinitialize particles on orientation change thoroughly
+      window.addEventListener('orientationchange', () => {
         setTimeout(() => {
-          window.location.href = '/login';
-        }, 500);
+          resizeCanvas();
+          resetParticleSystem();
+        }, 30);
       });
-      // magnetic effect on mouse move
-      btn.addEventListener('mousemove', (e) => {
-        const rect = btn.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.02)`;
-      });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = 'translate(0px, 0px) scale(1)';
-      });
-    }
-
-    // Additional 3D tilt effect on 404 text
-    const glitchEl = document.querySelector('.glitch-404');
-    document.addEventListener('mousemove', (e) => {
-      if (!glitchEl) return;
-      const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
-      const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
-      glitchEl.style.transform = `rotateX(${yAxis * 0.3}deg) rotateY(${xAxis * 0.3}deg) translateZ(10px)`;
-    });
-
-    // random glitch effect on .error-png-symbol each 4 sec
-    const pngMock = document.querySelector('.error-png-symbol');
-    if (pngMock) {
-      setInterval(() => {
-        pngMock.style.transform = 'skew(1deg, 0.5deg)';
-        setTimeout(() => { pngMock.style.transform = ''; }, 120);
-      }, 3800);
-    }
-
-    console.log("%c🔥 ERROR 404 // NOT FOUND // BUT THE REBELLION IS HERE 🔥", "color: #ff1a6e; font-size: 18px; font-weight: bold; font-family: monospace");
+    })();
   </script>
 </body>
 </html>
