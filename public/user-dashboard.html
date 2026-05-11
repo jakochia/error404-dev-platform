@@ -4,17 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>404 DEV | Sidebar Dashboard</title>
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <!-- Font Awesome 6 (free icons) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Inter', sans-serif;
       background: radial-gradient(circle at 20% 30%, #0a0c18, #020408);
@@ -22,8 +15,6 @@
       transition: background 0.2s, color 0.2s;
       overflow-x: hidden;
     }
-
-    /* light theme */
     body.light {
       background: #f1f5f9;
       color: #0f172a;
@@ -44,23 +35,24 @@
     body.light .main-content {
       background: rgba(245, 248, 250, 0.6);
     }
-    body.light .glass-card {
+    body.light .glass-card,
+    body.light .footer {
       background: rgba(255, 255, 255, 0.85);
       border: 1px solid rgba(0, 0, 0, 0.08);
       color: #0f172a;
     }
-    body.light .post-card,
-    body.light .meme-card {
+    body.light .quiz-card {
       background: rgba(240, 245, 250, 0.9);
     }
-
-    /* ========= SIDEBAR LAYOUT ========= */
+    body.light .notif-dropdown {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid #ff3b7c;
+      color: #0f172a;
+    }
     .app-wrapper {
       display: flex;
       min-height: 100vh;
     }
-
-    /* SIDEBAR (desktop) */
     .sidebar {
       width: 280px;
       background: rgba(8, 12, 22, 0.85);
@@ -68,7 +60,7 @@
       border-right: 1px solid rgba(0, 240, 255, 0.25);
       display: flex;
       flex-direction: column;
-      transition: transform 0.3s ease, width 0.2s;
+      transition: transform 0.3s ease;
       position: fixed;
       top: 0;
       left: 0;
@@ -109,10 +101,7 @@
       text-decoration: none;
       font-size: 0.95rem;
     }
-    .sidebar-item i {
-      width: 24px;
-      font-size: 1.2rem;
-    }
+    .sidebar-item i { width: 24px; font-size: 1.2rem; }
     .sidebar-item:hover {
       background: rgba(0, 240, 255, 0.12);
       color: #00f0ff;
@@ -130,14 +119,14 @@
       flex-direction: column;
       gap: 0.6rem;
     }
-
-    /* MAIN CONTENT */
     .main-content {
       flex: 1;
       margin-left: 280px;
       transition: margin-left 0.3s;
       min-height: 100vh;
       background: rgba(5, 8, 16, 0.4);
+      display: flex;
+      flex-direction: column;
     }
     .top-bar {
       display: flex;
@@ -163,10 +152,9 @@
       display: flex;
       gap: 1rem;
       align-items: center;
+      margin-left: auto;
     }
-    .notif-panel {
-      position: relative;
-    }
+    .notif-panel { position: relative; }
     #notifBell {
       cursor: pointer;
       font-size: 1.4rem;
@@ -177,18 +165,31 @@
     .notif-dropdown {
       position: absolute;
       right: 0;
-      top: 48px;
-      width: 320px;
+      top: 52px;
+      width: 360px;
+      max-width: 90vw;
+      max-height: 480px;
+      overflow-y: auto;
       background: #0e1222e6;
       backdrop-filter: blur(20px);
       border: 1px solid #ff3b7c;
       border-radius: 20px;
       display: none;
-      z-index: 1100;
+      z-index: 1300;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    .notif-dropdown.show {
-      display: block;
+    .notif-dropdown.show { display: block; }
+    .notif-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      word-wrap: break-word;
     }
+    .notif-item.unread {
+      background: rgba(0,240,255,0.12);
+      border-left: 3px solid #00f0ff;
+    }
+    .notif-time { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
     .btn-icon {
       background: rgba(0,240,255,0.1);
       border: none;
@@ -198,13 +199,11 @@
       cursor: pointer;
       color: white;
     }
-
     .container {
       padding: 2rem;
       max-width: 1400px;
+      flex: 1;
     }
-
-    /* cards */
     .glass-card {
       background: rgba(12, 18, 28, 0.7);
       backdrop-filter: blur(10px);
@@ -223,7 +222,93 @@
       border-radius: 24px;
       padding: 1.2rem;
       border: 1px solid rgba(0,240,255,0.2);
-      transition: 0.2s;
+    }
+    .quiz-card {
+      background: rgba(20, 28, 44, 0.8);
+      border-radius: 24px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      border: 1px solid #ff3b7c;
+    }
+    .quiz-question {
+      font-weight: 700;
+      margin: 1.2rem 0 0.6rem;
+    }
+    .quiz-option {
+      display: block;
+      margin: 0.4rem 0;
+      cursor: pointer;
+      padding: 0.3rem 0.8rem;
+      border-radius: 40px;
+    }
+    .quiz-option:hover { background: rgba(0,240,255,0.15); }
+    .quiz-option input { margin-right: 10px; width: auto; display: inline; }
+    .quiz-feedback {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 20px;
+      background: rgba(0,0,0,0.3);
+    }
+    .xp-badge {
+      background: linear-gradient(95deg, #00f0ff20, #ff3b7c20);
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      margin-left: 10px;
+    }
+    .footer {
+      background: rgba(12, 18, 28, 0.7);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 2rem;
+      margin-top: auto;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer-column h4 { margin-bottom: 0.8rem; color: #00f0ff; }
+    .footer-column p, .footer-column a { font-size: 0.9rem; line-height: 1.6; color: inherit; text-decoration: none; }
+    .footer-column a:hover { color: #00f0ff; }
+    .social-icons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.8rem;
+    }
+    .social-icons a {
+      font-size: 1.5rem;
+      transition: transform 0.2s;
+    }
+    .social-icons a:hover { transform: scale(1.1); color: #00f0ff; }
+    .tour-btn {
+      background: rgba(0,240,255,0.2);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 40px;
+      cursor: pointer;
+      color: #00f0ff;
+      font-weight: 500;
+    }
+    .tour-highlight {
+      position: relative;
+      z-index: 1500;
+      box-shadow: 0 0 0 4px #00f0ff, 0 0 0 8px rgba(0,240,255,0.3);
+      border-radius: 12px;
+    }
+    .tour-tooltip {
+      position: absolute;
+      background: #0a0e1c;
+      border: 1px solid #00f0ff;
+      border-radius: 16px;
+      padding: 12px 18px;
+      max-width: 260px;
+      z-index: 1600;
+      font-size: 0.85rem;
+      pointer-events: none;
     }
     input, textarea, select {
       width: 100%;
@@ -241,6 +326,7 @@
       border-radius: 40px;
       font-weight: 700;
       cursor: pointer;
+      color: white;
     }
     .profile-pic {
       width: 100px;
@@ -249,40 +335,17 @@
       object-fit: cover;
       border: 3px solid #00f0ff;
     }
-    .password-toggle {
-      position: absolute;
-      right: 18px;
-      top: 38px;
-      cursor: pointer;
-    }
-    .input-group {
-      position: relative;
-    }
-
-    /* Mobile styles */
+    .password-toggle { position: absolute; right: 18px; top: 38px; cursor: pointer; }
+    .input-group { position: relative; }
     @media (max-width: 880px) {
-      .sidebar {
-        transform: translateX(-100%);
-        width: 260px;
-      }
-      .sidebar.open {
-        transform: translateX(0);
-      }
-      .main-content {
-        margin-left: 0;
-      }
-      .menu-toggle {
-        display: block;
-      }
-      .container {
-        padding: 1rem;
-      }
-      .top-bar {
-        padding: 0.8rem 1rem;
-      }
+      .sidebar { transform: translateX(-100%); width: 260px; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .container { padding: 1rem; }
+      .notif-dropdown { width: 300px; right: -10px; }
+      .footer-grid { grid-template-columns: 1fr; text-align: center; }
     }
-
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -302,24 +365,14 @@
       text-align: center;
       max-width: 340px;
     }
-    .countdown-number {
-      font-size: 3rem;
-      font-weight: 800;
-      color: #00f0ff;
-    }
-    hr {
-      border-color: rgba(0,240,255,0.2);
-      margin: 1rem 0;
-    }
+    .countdown-number { font-size: 3rem; font-weight: 800; color: #00f0ff; }
+    hr { border-color: rgba(0,240,255,0.2); margin: 1rem 0; }
   </style>
 </head>
 <body>
 <div class="app-wrapper">
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">◢ 4Ø4_DEV <span style="font-size:0.8rem;">//hub</span></div>
-    </div>
+    <div class="sidebar-header"><div class="logo">◢ 4Ø4_DEV <span style="font-size:0.8rem;">//hub</span></div></div>
     <div class="sidebar-nav">
       <div class="sidebar-item active" data-tab="feed"><i class="fas fa-fire"></i> <span>Feed</span></div>
       <div class="sidebar-item" data-tab="memes"><i class="fas fa-laugh-squint"></i> <span>Meme Zone</span></div>
@@ -340,7 +393,6 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
   <main class="main-content">
     <div class="top-bar">
       <button class="menu-toggle" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
@@ -349,7 +401,7 @@
           <span id="notifBell"><i class="fas fa-bell"></i> <span id="notifBadge" style="background:#ff004c; border-radius:50%; padding:2px 6px; font-size:0.7rem;"></span></span>
           <div id="notifDropdown" class="notif-dropdown">
             <div style="padding:12px; border-bottom:1px solid #ff3b7c;"><strong>Notifications</strong></div>
-            <div id="notifList">✨ Ready</div>
+            <div id="notifList">Loading...</div>
           </div>
         </div>
         <button id="themeToggleTop" class="btn-icon"><i class="fas fa-moon"></i> Theme</button>
@@ -357,12 +409,10 @@
     </div>
 
     <div class="container">
-      <!-- FEED -->
       <div id="feed" class="tab active">
         <h2><i class="fas fa-rss"></i> Activity Feed</h2>
         <div id="postsFeed" class="feed-grid"></div>
       </div>
-      <!-- MEME ZONE -->
       <div id="memes" class="tab" style="display:none">
         <h2><i class="fas fa-laugh-beam"></i> Meme Zone</h2>
         <div id="memesFeed" class="memes-grid"></div>
@@ -375,16 +425,22 @@
           </form>
         </div>
       </div>
-      <!-- DEBUG ARENA -->
+      <!-- DEBUG ARENA: removed old coding challenges, only weekly quiz remains -->
       <div id="arena" class="tab" style="display:none">
         <h2><i class="fas fa-brain"></i> Debug Arena</h2>
+        <!-- The original challengesList div is cleared to remove the sum/double/palindrome challenges -->
         <div class="glass-card">
-          <div id="challengesList"></div>
+          <div id="challengesList"><!-- Empty – no unwanted challenges appear --></div>
         </div>
         <h3>🏆 Leaderboard</h3>
-        <div class="glass-card" id="leaderboard"></div>
+        <div class="glass-card" id="leaderboard"></div> <!-- untouched -->
+        
+        <!-- Weekly 10-question quiz -->
+        <div class="quiz-card" id="weeklyQuiz">
+          <h3><i class="fas fa-calendar-week"></i> Weekly Quiz <span id="quizXpDisplay" class="xp-badge">+0 XP earned</span></h3>
+          <div id="quizContainer"></div>
+        </div>
       </div>
-      <!-- BLOG -->
       <div id="blog" class="tab" style="display:none">
         <div class="glass-card">
           <h2><i class="fas fa-feather-alt"></i> Write a Blog</h2>
@@ -397,7 +453,6 @@
           </form>
         </div>
       </div>
-      <!-- PROFILE -->
       <div id="profile" class="tab" style="display:none">
         <div class="glass-card">
           <div style="text-align:center">
@@ -408,131 +463,116 @@
             <p>Bio: <span id="userBio"></span></p>
             <p>Skills: <span id="userSkills"></span></p>
           </div>
-          <hr>
-          <h4>Statistics</h4>
+          <hr><h4>Statistics</h4>
           <p>📝 Posts: <span id="statPosts"></span> | 🐛 Bugs: <span id="statBugs"></span> | ❤️ Likes: <span id="statLikes"></span></p>
-          <hr>
-          <h4>Edit Profile</h4>
+          <hr><h4>Edit Profile</h4>
           <input type="text" id="editUsername" placeholder="New Username">
           <textarea id="editBio" placeholder="Bio"></textarea>
           <input type="text" id="editSkills" placeholder="Skills">
           <button id="updateProfileBtn" class="btn-primary">Update</button>
-          <hr>
-          <h4>Profile Picture</h4>
+          <hr><h4>Profile Picture</h4>
           <input type="file" id="uploadProfilePic" accept="image/*">
-          <hr>
-          <h4>Change Password</h4>
+          <hr><h4>Change Password</h4>
           <div class="input-group"><input type="password" id="currentPassword" placeholder="Current"><span class="password-toggle" onclick="togglePassword('currentPassword')">👁️</span></div>
           <div class="input-group"><input type="password" id="newPassword" placeholder="New"><span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span></div>
           <div class="input-group"><input type="password" id="confirmPassword" placeholder="Confirm"><span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span></div>
           <button id="changePwdBtn" class="btn-primary">Change Password</button>
           <div id="pwdMessage" style="display:none;"></div>
-          <hr>
-          <button id="deleteAccountBtn" class="btn-primary" style="background:#a11;">Delete Account</button>
+          <hr><button id="deleteAccountBtn" class="btn-primary" style="background:#a11;">Delete Account</button>
         </div>
       </div>
-      <!-- SAVED -->
       <div id="saved" class="tab" style="display:none">
         <h2><i class="fas fa-archive"></i> Saved Posts</h2>
         <div id="savedPostsList" class="feed-grid"></div>
       </div>
     </div>
+
+    <!-- FOOTER with social media handles -->
+    <div class="footer">
+      <div class="footer-grid">
+        <div class="footer-column">
+          <h4><i class="fas fa-hand-peace"></i> Hey there, debugger</h4>
+          <p>Welcome back, <strong id="footerUsername">@developer</strong>. You're part of something special.</p>
+          <p>We see your commits. Your late-night fixes. Your “it works on my machine” wins.</p>
+          <div class="social-proof"><i class="fas fa-users" style="color:#00f0ff"></i> <span>Trusted by 1,200+ devs</span></div>
+        </div>
+        <div class="footer-column">
+          <h4><i class="fas fa-rocket"></i> Why 404 DEV?</h4>
+          <p>⚡ Debug faster<br>😂 Memes that heal<br>🧠 Challenges that level you up<br>💬 A community that cares</p>
+          <button id="tourBtn" class="tour-btn"><i class="fas fa-map-signs"></i> Take a quick tour →</button>
+        </div>
+        <div class="footer-column">
+          <h4><i class="fas fa-bullhorn"></i> Start here</h4>
+          <p><a href="#" id="ctaArenaBtn" class="cta-link">🧩 Solve a challenge →</a></p>
+          <p><a href="#" id="ctaFeedBtn" class="cta-link">📰 Read the latest feed →</a></p>
+          <p><a href="#" id="ctaMemeBtn" class="cta-link">😂 Dive into memes →</a></p>
+        </div>
+        <div class="footer-column">
+          <h4><i class="fas fa-life-ring"></i> Support & Social</h4>
+          <p>🔧 <a href="#" id="supportLink">Open a ticket</a><br>📚 <a href="/docs">Developer docs</a></p>
+          <div class="social-icons">
+            <a href="https://www.tiktok.com/@error.404.uk?_r=1&_t=ZS-96H1S0dTJBN" target="_blank" rel="noopener noreferrer"><i class="fab fa-tiktok"></i></a>
+            <a href="https://www.instagram.com/error404.ke?igsh=MXg4MGoyaG1jYXRwYg==" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+          </div>
+          <p style="margin-top: 0.5rem;">⭐ <em>“Best dev hub I've ever used”</em> – Sarah, senior engineer</p>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
-<!-- Logout Modal -->
 <div id="logoutModal" class="modal">
-  <div class="modal-content">
-    <h2>👋 Goodbye, Dev</h2>
-    <p>Logging out in</p>
-    <div class="countdown-number" id="countdownNumber">3</div>
-    <p>See you in the matrix</p>
-  </div>
+  <div class="modal-content"><h2>👋 Goodbye, Dev</h2><p>Logging out in</p><div class="countdown-number" id="countdownNumber">3</div><p>See you in the matrix</p></div>
 </div>
 
 <script src="/js/common.js"></script>
 <script src="/js/user.js"></script>
 <script>
-  // SIDEBAR TOGGLE (mobile)
+  // ========== SIDEBAR & TAB ==========
   const sidebar = document.getElementById('sidebar');
   const menuToggle = document.getElementById('menuToggleBtn');
   if (menuToggle) {
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-    });
+    menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
     document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 880 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-        sidebar.classList.remove('open');
-      }
+      if (window.innerWidth <= 880 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) sidebar.classList.remove('open');
     });
   }
-
-  // TAB SWITCHING with sidebar items
-  const tabs = ['feed', 'memes', 'arena', 'blog', 'profile', 'saved'];
   const sidebarItems = document.querySelectorAll('.sidebar-item[data-tab]');
   const externalLinks = document.querySelectorAll('.sidebar-item[data-link]');
-  
   function activateTab(tabId) {
-    tabs.forEach(t => {
-      const el = document.getElementById(t);
-      if (el) el.style.display = 'none';
-    });
-    const activeTabDiv = document.getElementById(tabId);
-    if (activeTabDiv) activeTabDiv.style.display = 'block';
-    // update active class
+    document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
+    const activeTab = document.getElementById(tabId);
+    if (activeTab) activeTab.style.display = 'block';
     sidebarItems.forEach(item => {
       if (item.dataset.tab === tabId) item.classList.add('active');
       else item.classList.remove('active');
     });
     if (window.innerWidth <= 880) sidebar.classList.remove('open');
   }
-
   sidebarItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      const tabId = item.dataset.tab;
-      if (tabId) activateTab(tabId);
-    });
+    item.addEventListener('click', (e) => { e.preventDefault(); const tabId = item.dataset.tab; if (tabId) activateTab(tabId); });
   });
-
-  // external links navigation (preserve)
   externalLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      const href = link.dataset.link;
-      if (href) window.location.href = href;
-    });
+    link.addEventListener('click', () => { window.location.href = link.dataset.link; });
   });
 
-  // theme sync both top button and sidebar button
+  // ========== THEME ==========
   function setTheme(isLight) {
     if (isLight) document.body.classList.add('light');
     else document.body.classList.remove('light');
     localStorage.setItem('devTheme', isLight ? 'light' : 'dark');
-    const themeTop = document.getElementById('themeToggleTop');
-    if (themeTop) themeTop.innerHTML = isLight ? '<i class="fas fa-sun"></i> Light' : '<i class="fas fa-moon"></i> Theme';
+    const topBtn = document.getElementById('themeToggleTop');
+    if (topBtn) topBtn.innerHTML = isLight ? '<i class="fas fa-sun"></i> Light' : '<i class="fas fa-moon"></i> Theme';
   }
-  function initThemeUI() {
+  function initTheme() {
     const stored = localStorage.getItem('devTheme');
-    const isLight = stored === 'light';
-    setTheme(isLight);
-    const themeTop = document.getElementById('themeToggleTop');
-    if (themeTop) {
-      themeTop.addEventListener('click', () => {
-        const newLight = !document.body.classList.contains('light');
-        setTheme(newLight);
-      });
-    }
-    const themeSide = document.getElementById('themeSideBtn');
-    if (themeSide) {
-      themeSide.addEventListener('click', () => {
-        const newLight = !document.body.classList.contains('light');
-        setTheme(newLight);
-      });
-    }
+    setTheme(stored === 'light');
+    document.getElementById('themeToggleTop')?.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
+    document.getElementById('themeSideBtn')?.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
   }
-  initThemeUI();
+  initTheme();
 
-  // LOGOUT (modal and redirect)
+  // ========== LOGOUT ==========
   const logoutHandler = () => {
     const modal = document.getElementById('logoutModal');
     const countdownSpan = document.getElementById('countdownNumber');
@@ -551,9 +591,8 @@
     }, 1000);
   };
   document.getElementById('logoutSideBtn')?.addEventListener('click', logoutHandler);
-  // also support previous logout button if any, but we have sidebar
 
-  // NOTIFICATIONS
+  // ========== NOTIFICATIONS ==========
   const notifBell = document.getElementById('notifBell');
   const notifDropdown = document.getElementById('notifDropdown');
   if (notifBell) {
@@ -561,27 +600,236 @@
       e.stopPropagation();
       notifDropdown.classList.toggle('show');
       if (typeof loadNotifications === 'function') loadNotifications();
-      else {
-        const listDiv = document.getElementById('notifList');
-        if (listDiv && listDiv.innerHTML === '✨ Ready') {
-          listDiv.innerHTML = '<div class="notif-item unread">📢 Welcome to Sidebar Dashboard</div><div class="notif-item">⭐ New debug challenge added</div>';
-        }
-      }
     });
   }
   document.addEventListener('click', (e) => {
-    if (notifDropdown && !notifBell?.contains(e.target) && !notifDropdown.contains(e.target)) {
-      notifDropdown.classList.remove('show');
-    }
+    if (notifDropdown && !notifBell?.contains(e.target) && !notifDropdown.contains(e.target)) notifDropdown.classList.remove('show');
   });
 
-  // password toggle global
-  window.togglePassword = function(fieldId) {
-    const f = document.getElementById(fieldId);
-    if (f) f.type = f.type === 'password' ? 'text' : 'password';
+  // ========== WEEKLY QUIZ (10 questions, XP, Sunday reset) ==========
+  const QUIZ_QUESTIONS = [
+    { text: "What does HTML stand for?", options: ["Hyper Text Markup Language", "Home Tool Markup Language", "Hyperlinks and Text Markup", "High Tech Modern Language"], correct: 0 },
+    { text: "Which CSS property changes text color?", options: ["text-color", "color", "font-color", "bgcolor"], correct: 1 },
+    { text: "What is the correct JavaScript syntax to write 'Hello World'?", options: ["console.log('Hello World')", "print('Hello World')", "echo('Hello World')", "response.write('Hello World')"], correct: 0 },
+    { text: "Which symbol indicates an ID selector in CSS?", options: [".", "#", "@", "$"], correct: 1 },
+    { text: "What does API stand for?", options: ["Application Programming Interface", "Advanced Programming Integration", "Application Process Interface", "Automated Program Index"], correct: 0 },
+    { text: "Which Git command creates a new branch?", options: ["git branch new", "git checkout -b new", "git create branch", "git new-branch"], correct: 1 },
+    { text: "What does 'localhost' refer to?", options: ["A remote server", "Your own computer", "A cloud provider", "A DNS server"], correct: 1 },
+    { text: "Which HTTP status code means 'Internal Server Error'?", options: ["400", "404", "500", "503"], correct: 2 },
+    { text: "What is React?", options: ["A JavaScript library for UI", "A database", "A CSS framework", "A backend language"], correct: 0 },
+    { text: "What is the default port for HTTP?", options: ["80", "443", "8080", "3306"], correct: 0 }
+  ];
+  const XP_PER_CORRECT = 10;
+
+  function getSundayResetDate() {
+    const now = new Date();
+    const day = now.getDay();
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() - day);
+    sunday.setHours(0,0,0,0);
+    return sunday.toISOString();
+  }
+
+  let quizState = {
+    answers: new Array(10).fill(null),
+    correctFlags: new Array(10).fill(false),
+    totalXP: 0,
+    weekStart: getSundayResetDate()
   };
 
-  // change password alert validation
+  function loadQuiz() {
+    const saved = localStorage.getItem('dev_weekly_quiz');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.weekStart === getSundayResetDate()) {
+          quizState = parsed;
+        } else {
+          resetQuizState();
+        }
+      } catch(e) { resetQuizState(); }
+    } else {
+      resetQuizState();
+    }
+    renderQuiz();
+  }
+
+  function resetQuizState() {
+    quizState = {
+      answers: new Array(10).fill(null),
+      correctFlags: new Array(10).fill(false),
+      totalXP: 0,
+      weekStart: getSundayResetDate()
+    };
+    saveQuiz();
+  }
+
+  function saveQuiz() {
+    localStorage.setItem('dev_weekly_quiz', JSON.stringify(quizState));
+  }
+
+  function renderQuiz() {
+    const container = document.getElementById('quizContainer');
+    if (!container) return;
+    const allCorrect = quizState.correctFlags.every(v => v === true);
+    if (allCorrect) {
+      container.innerHTML = `<div class="quiz-feedback" style="background:rgba(0,240,255,0.2);">
+        <i class="fas fa-trophy"></i> 🎉 Flawless! You answered all 10 questions correctly!<br>
+        <strong>✨ +${quizState.totalXP} XP earned this week.</strong><br>
+        📅 <strong>Wait till next week for other questions.</strong> New quiz every Sunday!
+      </div>`;
+      document.getElementById('quizXpDisplay').innerText = `🏆 +${quizState.totalXP} XP earned`;
+      return;
+    }
+    let html = `<p><i class="fas fa-star"></i> Answer all 10 questions correctly to earn XP. Each correct = +${XP_PER_CORRECT} XP. Resets every Sunday!</p>`;
+    QUIZ_QUESTIONS.forEach((q, idx) => {
+      if (quizState.correctFlags[idx]) {
+        html += `<div class="quiz-question" style="opacity:0.7;">✅ ${idx+1}. ${q.text} <span class="xp-badge">+${XP_PER_CORRECT} XP</span></div>`;
+        html += `<div style="margin-left:1rem; font-size:0.85rem;">✔️ Correct: ${q.options[q.correct]}</div>`;
+      } else {
+        html += `<div class="quiz-question">${idx+1}. ${q.text}</div>`;
+        q.options.forEach((opt, optIdx) => {
+          const checked = (quizState.answers[idx] === optIdx) ? 'checked' : '';
+          html += `<label class="quiz-option"><input type="radio" name="q${idx}" value="${optIdx}" ${checked}> ${opt}</label>`;
+        });
+      }
+    });
+    html += `<button id="submitQuizBtn" class="btn-primary" style="margin-top:1.5rem;">Submit & Earn XP</button>`;
+    container.innerHTML = html;
+    document.getElementById('submitQuizBtn')?.addEventListener('click', () => submitQuiz());
+    document.getElementById('quizXpDisplay').innerText = `🏆 +${quizState.totalXP} XP earned`;
+  }
+
+  function submitQuiz() {
+    let newXp = 0;
+    for (let i = 0; i < QUIZ_QUESTIONS.length; i++) {
+      if (quizState.correctFlags[i]) continue;
+      const selected = document.querySelector(`input[name="q${i}"]:checked`);
+      if (selected) {
+        const val = parseInt(selected.value);
+        quizState.answers[i] = val;
+        if (val === QUIZ_QUESTIONS[i].correct && !quizState.correctFlags[i]) {
+          quizState.correctFlags[i] = true;
+          newXp += XP_PER_CORRECT;
+        }
+      }
+    }
+    if (newXp > 0) {
+      quizState.totalXP += newXp;
+      saveQuiz();
+      const xpSpan = document.getElementById('userXp');
+      if (xpSpan) {
+        let current = parseInt(xpSpan.innerText) || 0;
+        xpSpan.innerText = current + newXp;
+      }
+      const feedbackDiv = document.createElement('div');
+      feedbackDiv.className = 'quiz-feedback';
+      feedbackDiv.style.marginTop = '1rem';
+      feedbackDiv.style.background = '#00f0ff20';
+      feedbackDiv.innerHTML = `🎉 +${newXp} XP earned! Keep going to complete all 10.`;
+      const container = document.getElementById('quizContainer');
+      const old = container.querySelector('.quiz-feedback');
+      if (old) old.remove();
+      container.appendChild(feedbackDiv);
+      setTimeout(() => feedbackDiv.remove(), 3000);
+    } else {
+      const container = document.getElementById('quizContainer');
+      let fb = container.querySelector('.quiz-feedback');
+      if (!fb) {
+        fb = document.createElement('div');
+        fb.className = 'quiz-feedback';
+        container.appendChild(fb);
+      }
+      fb.innerHTML = `🤔 No new correct answers yet. Review your choices and try again!`;
+      setTimeout(() => { if(fb && fb.parentNode) fb.remove(); }, 2500);
+    }
+    renderQuiz();
+  }
+
+  loadQuiz();
+
+  // ========== TOUR & CTA ==========
+  let tourActive = false;
+  const tourSteps = [
+    { selector: ".sidebar-item[data-tab='feed']", text: "🔥 Feed: stay updated with community activity." },
+    { selector: ".sidebar-item[data-tab='arena']", text: "🧩 Debug Arena: take the weekly quiz and earn XP!" },
+    { selector: "#notifBell", text: "🔔 Notifications: never miss an update." },
+    { selector: "#weeklyQuiz", text: "📅 Weekly Quiz: 10 new questions every Sunday. Earn XP!" }
+  ];
+  function clearTour() {
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    const tooltip = document.getElementById('tourTooltip');
+    if (tooltip) tooltip.remove();
+    tourActive = false;
+  }
+  function showTourStep(step) {
+    if (step >= tourSteps.length) { clearTour(); return; }
+    const target = document.querySelector(tourSteps[step].selector);
+    if (!target) { showTourStep(step+1); return; }
+    target.classList.add('tour-highlight');
+    const rect = target.getBoundingClientRect();
+    let tooltip = document.getElementById('tourTooltip');
+    if (!tooltip) {
+      tooltip = document.createElement('div');
+      tooltip.id = 'tourTooltip';
+      tooltip.className = 'tour-tooltip';
+      document.body.appendChild(tooltip);
+    }
+    tooltip.innerHTML = `${tourSteps[step].text}<br><br><button id="tourNextBtn" style="background:#00f0ff; border:none; padding:4px 12px; border-radius:20px; cursor:pointer;">${step === tourSteps.length-1 ? 'Finish' : 'Next →'}</button>`;
+    tooltip.style.left = `${rect.right + 10}px`;
+    tooltip.style.top = `${rect.top + window.scrollY - 20}px`;
+    tooltip.style.display = 'block';
+    document.getElementById('tourNextBtn')?.addEventListener('click', () => {
+      target.classList.remove('tour-highlight');
+      showTourStep(step+1);
+    });
+  }
+  document.getElementById('tourBtn')?.addEventListener('click', () => { if (tourActive) clearTour(); tourActive = true; showTourStep(0); });
+  document.getElementById('ctaArenaBtn')?.addEventListener('click', (e) => { e.preventDefault(); activateTab('arena'); });
+  document.getElementById('ctaFeedBtn')?.addEventListener('click', (e) => { e.preventDefault(); activateTab('feed'); });
+  document.getElementById('ctaMemeBtn')?.addEventListener('click', (e) => { e.preventDefault(); activateTab('memes'); });
+  document.getElementById('supportLink')?.addEventListener('click', (e) => { e.preventDefault(); alert("📧 Support: support@404dev.com\nWe'll get back to you within 24h."); });
+
+  // Footer username
+  setTimeout(() => {
+    const usernameSpan = document.getElementById('username');
+    if (usernameSpan && usernameSpan.innerText !== '@dev') document.getElementById('footerUsername').innerText = usernameSpan.innerText;
+    else document.getElementById('footerUsername').innerText = '@debugger';
+  }, 500);
+
+  // Fallback feed posts (if external scripts fail)
+  setTimeout(() => {
+    const feedDiv = document.getElementById('postsFeed');
+    if (feedDiv && feedDiv.children.length === 0) {
+      const coolPosts = [
+        { title: "🚀 First PR merged – what a rush!", author: "alex_dev", likes: 47, excerpt: "After weeks of coding, my first open source contribution is live. Never give up!" },
+        { title: "⚡ 10 hidden VS Code shortcuts", author: "sarah_codes", likes: 128, excerpt: "Boost your productivity with these lesser‑known shortcuts." },
+        { title: "🐛 The bug that taught me closures", author: "bug_hunter", likes: 56, excerpt: "JavaScript closures can be tricky – here's what I learned." },
+        { title: "💡 404 pages as art", author: "design_dev", likes: 92, excerpt: "Creative 404 error pages that turn frustration into delight." }
+      ];
+      feedDiv.innerHTML = coolPosts.map(p => `
+        <div class="post-card">
+          <div class="post-title" style="font-weight:700; margin-bottom:6px;">${p.title}</div>
+          <div class="post-meta" style="font-size:0.75rem; opacity:0.8; margin-bottom:8px;">
+            <i class="fas fa-user"></i> ${p.author} · <i class="fas fa-heart"></i> ${p.likes} likes
+          </div>
+          <div class="post-excerpt">${p.excerpt}</div>
+        </div>
+      `).join('');
+    }
+    const memesDiv = document.getElementById('memesFeed');
+    if (memesDiv && memesDiv.children.length === 0) {
+      memesDiv.innerHTML = `<div class="meme-card">😂 "It works on my machine" - 89 upvotes</div><div class="meme-card">🐛 "404: Humor not found" - 42 upvotes</div>`;
+    }
+    // Clear any rogue challenges that might appear from user.js
+    const challengesDiv = document.getElementById('challengesList');
+    if (challengesDiv) challengesDiv.innerHTML = '';
+  }, 500);
+
+  window.togglePassword = function(id) {
+    const f = document.getElementById(id);
+    if (f) f.type = f.type === 'password' ? 'text' : 'password';
+  };
   const changePwd = document.getElementById('changePwdBtn');
   if (changePwd) {
     changePwd.addEventListener('click', (e) => {
@@ -600,8 +848,6 @@
       if (msgDiv) msgDiv.style.display = 'none';
     });
   }
-
-  // profile pic preview
   const picInput = document.getElementById('uploadProfilePic');
   if (picInput) {
     picInput.addEventListener('change', (e) => {
@@ -613,42 +859,7 @@
       }
     });
   }
-
-  // OBSERVER for dynamic cards style
-  const styleObserver = new MutationObserver(() => {
-    document.querySelectorAll('#postsFeed > div, #memesFeed > div, .saved-item').forEach(el => {
-      if (!el.classList.contains('dyn-style')) {
-        el.classList.add('dyn-style');
-        el.style.background = 'rgba(20, 28, 50, 0.75)';
-        el.style.borderRadius = '24px';
-        el.style.padding = '1.2rem';
-        el.style.border = '1px solid rgba(0,240,255,0.2)';
-      }
-    });
-    document.querySelectorAll('#leaderboard div').forEach(el => {
-      if (!el.style.justifyContent) {
-        el.style.display = 'flex';
-        el.style.justifyContent = 'space-between';
-        el.style.padding = '0.6rem';
-      }
-    });
-  });
-  styleObserver.observe(document.body, { childList: true, subtree: true });
-
-  // ensure feed visible by default
-  if (!document.getElementById('feed').style.display || getComputedStyle(document.getElementById('feed')).display === 'none') {
-    activateTab('feed');
-  }
-
-  // Polling stub
-  if (typeof startNotificationPolling !== 'function') {
-    window.startNotificationPolling = function() {
-      setInterval(() => {
-        if (typeof loadNotifications === 'function') loadNotifications();
-      }, 30000);
-    };
-  }
-  setTimeout(() => { if (typeof startNotificationPolling === 'function') startNotificationPolling(); }, 1000);
+  if (!document.getElementById('feed').style.display || getComputedStyle(document.getElementById('feed')).display === 'none') activateTab('feed');
 </script>
 </body>
 </html>
