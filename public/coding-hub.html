@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="/css/style.css">
+  <title>404 DEV | Coding Hub // GLITCH WORKSPACE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 10% 20%, #0a0c18 0%, #020408 100%);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #eef5ff;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* animated cyber background */
+    .cyber-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .noise {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: overlay;
+    }
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.25;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .orb-1 { width: 60vw; height: 60vw; background: radial-gradient(circle, #ff1a6e, transparent); top: -30vh; left: -20vw; }
+    .orb-2 { width: 70vw; height: 70vw; background: radial-gradient(circle, #00f0ff, transparent); bottom: -40vh; right: -20vw; animation: floatOrb 18s infinite alternate; }
+    @keyframes floatOrb { 0% { transform: translate(0,0); } 100% { transform: translate(5%, 8%); } }
+
+    /* navbar – modern glass */
+    .navbar {
+      backdrop-filter: blur(16px);
+      background: rgba(5, 10, 25, 0.7);
+      border-radius: 60px;
+      margin: 1rem 1.5rem;
+      padding: 0.6rem 1.8rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255, 51, 102, 0.4);
+      box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
+      position: relative;
+      z-index: 20;
+    }
+    .nav-link {
+      color: #ccd6ff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 40px;
+      transition: 0.2s;
+      font-size: 0.9rem;
+    }
+    .nav-link:hover {
+      background: rgba(0, 240, 255, 0.15);
+      color: #00f0ff;
+      transform: translateY(-2px);
+    }
+    .btn-small {
+      background: #ff004c;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 40px;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+    .btn-small:hover {
+      background: #00f0ff;
+      box-shadow: 0 0 12px #00f0ff;
+    }
+
+    /* main container */
+    .container {
+      max-width: 1400px;
+      margin: 1rem auto;
+      padding: 0 1.5rem 2rem;
+      position: relative;
+      z-index: 15;
+    }
+
+    h1.glitch {
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #ff1a6e, #00f0ff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 1.8rem;
+      text-align: center;
+      animation: glitchPulse 2s infinite alternate;
+    }
+    @keyframes glitchPulse {
+      0% { text-shadow: 0 0 2px #ff1a6e; }
+      100% { text-shadow: 0 0 12px #00f0ff; }
+    }
+
+    /* glass card */
+    .glass-card {
+      background: rgba(10, 15, 30, 0.65);
+      backdrop-filter: blur(14px);
+      border-radius: 32px;
+      border: 1px solid rgba(255, 51, 102, 0.4);
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      transition: all 0.2s;
+    }
+    .glass-card:hover {
+      border-color: rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+    }
+    .glass-card h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1.2rem;
+      background: linear-gradient(145deg, #fff, #ff9eb5);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    /* tutorial grid */
+    .tutorial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .broken-hover {
+      background: rgba(12, 18, 32, 0.7);
+      border-radius: 24px;
+      padding: 1.2rem;
+      transition: 0.25s;
+      border: 1px solid rgba(255, 51, 102, 0.3);
+    }
+    .broken-hover:hover {
+      transform: translateY(-6px);
+      border-color: #0ff;
+      box-shadow: 0 15px 25px -12px #0ff30;
+    }
+    .lang-tag {
+      background: linear-gradient(95deg, #ff004c, #ff6699);
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+
+    /* fix card */
+    .fix-card {
+      background: #0a0c14;
+      padding: 1.2rem;
+      border-radius: 20px;
+      margin-top: 16px;
+      border-left: 4px solid #ff004c;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 14px 18px;
+      margin: 10px 0;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 51, 102, 0.5);
+      border-radius: 20px;
+      font-size: 0.9rem;
+      color: #eef5ff;
+      font-family: 'JetBrains Mono', monospace;
+      transition: 0.2s;
+      outline: none;
+    }
+    textarea:focus, input:focus {
+      border-color: #0ff;
+      box-shadow: 0 0 12px #0ff8;
+    }
+
+    .btn {
+      background: linear-gradient(95deg, #ff004c, #c4003b);
+      border: none;
+      padding: 12px 28px;
+      border-radius: 60px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-right: 12px;
+      font-size: 0.9rem;
+    }
+    .btn:hover {
+      background: linear-gradient(95deg, #00c3ff, #0080aa);
+      box-shadow: 0 0 16px #0ff;
+      transform: scale(1.02);
+    }
+    #aiDebugBtn {
+      background: linear-gradient(95deg, #0f0, #0a8);
+      box-shadow: 0 0 10px #0f08;
+    }
+    #aiSuggestion {
+      background: #05070f;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid #0ff;
+      margin-top: 16px;
+      font-family: monospace;
+    }
+
+    /* responsive */
+    @media (max-width: 750px) {
+      .navbar { margin: 0.5rem; padding: 0.5rem 1rem; gap: 6px; }
+      .container { padding: 0 1rem; }
+      .glass-card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-grid"></div>
+  <div class="noise"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="navbar">
+    <a href="/user-dashboard.html" class="nav-link">🏠 Dashboard</a>
+    <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
+    <a href="/forum.html" class="nav-link">💬 Forum</a>
+    <a href="/playground.html" class="nav-link">🧪 Playground</a>
+    <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
+    <a href="/messages.html" class="nav-link">💬 Messages</a>
+    <button id="themeToggle" class="btn-small">🌓</button>
+    <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
+  </div>
+
+  <div class="container">
+    <h1 class="glitch">💻 Coding Hub</h1>
+    <div class="glass-card">
+      <h2>📚 Tutorials</h2>
+      <div class="tutorial-grid" id="tutorials"></div>
+    </div>
+    <div class="glass-card">
+      <h2>🔧 Fix My Code</h2>
+      <div>
+        <textarea id="brokenCode" rows="5" placeholder="Paste your broken code here..."></textarea>
+        <input type="text" id="codeLanguage" placeholder="Language (JS/Python/HTML etc)">
+        <button id="submitFixRequest" class="btn">📤 Request Fix</button>
+        <button id="aiDebugBtn" class="btn" style="background:#00f0ff; color:#0b0f1a;">🤖 Ask AI to Fix</button>
+        <div id="aiSuggestion" style="margin-top:10px; background:#0a0c14; padding:10px; border-radius:8px;"></div>
+      </div>
+      <div id="fixRequestsList"></div>
+    </div>
+  </div>
+
+  <!-- preserve all original scripts exactly -->
+  <script src="/js/common.js"></script>
+  <script>
+    // Tutorials data – unchanged
+    const tutorials = [
+      { title: "HTML Basics", lang: "HTML", level: "Beginner", link: "https://www.w3schools.com/html/" },
+      { title: "CSS Flexbox", lang: "CSS", level: "Intermediate", link: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/" },
+      { title: "JavaScript ES6", lang: "JS", level: "Advanced", link: "https://javascript.info/" },
+      { title: "Python for Beginners", lang: "Python", level: "Beginner", link: "https://www.learnpython.org/" },
+      { title: "Java OOP", lang: "Java", level: "Intermediate", link: "https://www.w3schools.com/java/" },
+      { title: "C++ STL", lang: "C++", level: "Advanced", link: "https://cplusplus.com/" }
+    ];
+    const container = document.getElementById('tutorials');
+    tutorials.forEach(t => {
+      const card = document.createElement('div');
+      card.className = 'glass-card broken-hover';
+      card.innerHTML = `<h3>${t.title}</h3><span class="lang-tag">${t.lang}</span> <span>${t.level}</span><br><a href="${t.link}" target="_blank" style="color:#00f0ff;">Learn →</a>`;
+      container.appendChild(card);
+    });
+
+    // Fix requests (stored in localStorage) – unchanged logic
+    let fixRequests = JSON.parse(localStorage.getItem('fixRequests') || '[]');
+    function renderFixRequests() {
+      const listDiv = document.getElementById('fixRequestsList');
+      listDiv.innerHTML = '';
+      fixRequests.slice().reverse().forEach(req => {
+        const div = document.createElement('div');
+        div.className = 'fix-card';
+        div.innerHTML = `<p><strong>Language: ${req.lang}</strong></p><pre>${req.code.substring(0, 200)}...</pre><button class="btn-small view-fix" data-code="${encodeURIComponent(req.code)}">View Full</button>`;
+        listDiv.appendChild(div);
+      });
+      document.querySelectorAll('.view-fix').forEach(btn => {
+        btn.addEventListener('click', () => alert(decodeURIComponent(btn.dataset.code)));
+      });
+    }
+    document.getElementById('submitFixRequest').addEventListener('click', () => {
+      const code = document.getElementById('brokenCode').value;
+      const lang = document.getElementById('codeLanguage').value;
+      if (!code.trim()) return;
+      fixRequests.push({ code, lang, timestamp: Date.now() });
+      localStorage.setItem('fixRequests', JSON.stringify(fixRequests));
+      renderFixRequests();
+      document.getElementById('brokenCode').value = '';
+    });
+    renderFixRequests();
+
+    // AI Debug – original fetchAuth preserved
+    document.getElementById('aiDebugBtn').addEventListener('click', async () => {
+      const code = document.getElementById('brokenCode').value;
+      if (!code.trim()) return alert('Paste your code first');
+      const res = await fetchAuth('/ai-debug', { method: 'POST', body: JSON.stringify({ code }) });
+      const data = await res.json();
+      document.getElementById('aiSuggestion').innerHTML = `<strong>🤖 AI Suggestion:</strong><pre>${data.suggestion || data.error || 'No response'}</pre>`;
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    initTheme();
+
+    // ensure fetchAuth exists (if not defined in common.js)
+    if (typeof fetchAuth !== 'function') {
+      window.fetchAuth = async (url, options = {}) => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return fetch(url, { ...options, headers });
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Courier New', 'Fira Code', monospace;
+}
+
+body {
+  background: #0b0f1a;
+  color: #00f0ff;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* Glitch effect */
+.glitch {
+  animation: glitch 0.3s infinite;
+  position: relative;
+}
+@keyframes glitch {
+  0% { text-shadow: -2px 0 #ff004c, 2px 0 #00f0ff; }
+  50% { text-shadow: 2px 0 #ff004c, -2px 0 #00f0ff; }
+  100% { text-shadow: 0 0 #ff004c; }
+}
+
+/* Terminal typing */
+.typing {
+  border-right: 2px solid #00f0ff;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: blinkCursor 0.75s step-end infinite;
+}
+@keyframes blinkCursor {
+  from, to { border-color: transparent; }
+  50% { border-color: #00f0ff; }
+}
+
+/* Cards */
+.glass-card {
+  background: rgba(11, 15, 26, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid #ff004c;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  transition: 0.3s;
+  box-shadow: 0 0 10px rgba(255, 0, 76, 0.3);
+}
+.glass-card:hover {
+  box-shadow: 0 0 20px #00f0ff;
+  transform: translateY(-2px);
+}
+
+/* Broken UI hover -> auto fix */
+.broken-hover {
+  transition: all 0.2s ease;
+}
+.broken-hover:hover {
+  transform: skew(0deg) translateY(0);
+  filter: drop-shadow(0 0 5px #00f0ff);
+}
+
+/* Buttons */
+.btn {
+  background: #ff004c;
+  color: #0b0f1a;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  border-radius: 8px;
+}
+.btn:hover {
+  background: #00f0ff;
+  box-shadow: 0 0 12px #00f0ff;
+  transform: scale(1.02);
+}
+
+/* Inputs */
+input, textarea, select {
+  background: #1a1f2e;
+  border: 1px solid #ff004c;
+  color: #00f0ff;
+  padding: 10px;
+  border-radius: 8px;
+  width: 100%;
+  margin: 8px 0;
+}
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #00f0ff;
+  box-shadow: 0 0 5px #00f0ff;
+}
+
+/* Verified tick */
+.verified-tick {
+  color: #00f0ff;
+  filter: drop-shadow(0 0 2px cyan);
+  margin-left: 6px;
+  font-size: 1.1em;
+}
+
+/* Profile image */
+.profile-pic {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #ff004c;
+  object-fit: cover;
+}
+
+/* Navigation */
+.navbar {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  background: rgba(0,0,0,0.5);
+  padding: 15px;
+  border-radius: 50px;
+  margin-bottom: 30px;
+}
+.nav-link {
+  color: #00f0ff;
+  text-decoration: none;
+  font-weight: bold;
+}
+.nav-link:hover {
+  text-shadow: 0 0 8px #00f0ff;
+}
+
+/* Grid */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Code block */
+pre {
+  background: #0a0c14;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  border-left: 4px solid #ff004c;
+}
+:root { --bg: #0b0f1a; --text: #00f0ff; --card-bg: rgba(11,15,26,0.85); }
+body.light { --bg: #f0f0f0; --text: #1a1f2e; --card-bg: rgba(255,255,255,0.9); }
+body { background: var(--bg); color: var(--text); }
+.glass-card { background: var(--card-bg); }

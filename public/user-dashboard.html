@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/css/style.css">
+  <title>404 DEV | User Panel</title>
+  <style>
+    body.light .glass-card { background: rgba(255,255,255,0.9); color: #1a1f2e; }
+    body.light .navbar a { color: #1a1f2e; }
+    .password-toggle { cursor: pointer; margin-left: 8px; }
+    .input-group { position: relative; margin-bottom: 15px; }
+    .input-group input { width: 100%; padding-right: 35px; }
+    .password-toggle { position: absolute; right: 10px; top: 35px; cursor: pointer; }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #0b0f1a;
+      border: 2px solid #ff004c;
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+    }
+    .countdown-number { font-size: 4rem; color: #00f0ff; margin: 20px 0; }
+    /* Notification panel */
+    .notif-panel { position: relative; display: inline-block; }
+    .notif-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 35px;
+      width: 320px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #0b0f1a;
+      border: 1px solid #ff004c;
+      border-radius: 12px;
+      z-index: 1000;
+      box-shadow: 0 0 20px rgba(0,240,255,0.2);
+    }
+    .notif-dropdown.show { display: block; }
+    .notif-item {
+      padding: 10px;
+      border-bottom: 1px solid #1a1f3a;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .notif-item:hover { background: #1a1f2e; }
+    .notif-item.unread { background: rgba(0,240,255,0.1); border-left: 3px solid #00f0ff; }
+    .notif-time { font-size: 0.7rem; color: #8892b0; }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <a href="#" class="nav-link" data-tab="feed">🔥 Feed</a>
+  <a href="#" class="nav-link" data-tab="memes">😂 Meme Zone</a>
+  <a href="#" class="nav-link" data-tab="arena">🧩 Debug Arena</a>
+  <a href="#" class="nav-link" data-tab="blog">📝 Write Blog</a>
+  <a href="#" class="nav-link" data-tab="profile">👤 Profile</a>
+  <a href="#" class="nav-link" data-tab="saved">📚 Saved</a>
+  <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
+  <a href="/forum.html" class="nav-link">💬 Forum</a>
+  <a href="/playground.html" class="nav-link">🧪 Playground</a>
+  <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
+  <a href="/messages.html" class="nav-link">💬 Messages</a>
+  <div class="notif-panel">
+    <span id="notifBell" style="cursor:pointer;">🔔 <span id="notifBadge" style="background:#ff004c; border-radius:50%; padding:2px 6px; font-size:0.7rem;"></span></span>
+    <div id="notifDropdown" class="notif-dropdown">
+      <div style="padding:10px; border-bottom:1px solid #ff004c;"><strong>Notifications</strong></div>
+      <div id="notifList">Loading...</div>
+    </div>
+  </div>
+  <button id="themeToggle" class="btn-small">🌓</button>
+  <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
+</div>
+
+<div class="container">
+  <!-- FEED TAB -->
+  <div id="feed" class="tab active">
+    <h2>📰 Activity Feed</h2>
+    <div id="postsFeed"></div>
+  </div>
+
+  <!-- MEME ZONE -->
+  <div id="memes" class="tab" style="display:none">
+    <h2>😂 Meme Zone</h2>
+    <div id="memesFeed"></div>
+    <hr>
+    <h3>Upload your meme</h3>
+    <form id="uploadMemeForm" enctype="multipart/form-data">
+      <input type="text" id="memeTitle" placeholder="Title" required>
+      <input type="file" id="memeFile" accept="image/*" required>
+      <button type="submit" class="btn">Upload Meme</button>
+    </form>
+  </div>
+
+  <!-- DEBUG ARENA -->
+  <div id="arena" class="tab" style="display:none">
+    <h2>🧩 Debug Arena</h2>
+    <div id="challengesList"></div>
+    <h3>🏆 Leaderboard</h3>
+    <div id="leaderboard"></div>
+  </div>
+
+  <!-- WRITE BLOG -->
+  <div id="blog" class="tab" style="display:none">
+    <h2>📝 Write a Blog Post</h2>
+    <form id="createPostForm">
+      <input type="text" id="postTitle" placeholder="Title" required>
+      <textarea id="postContent" rows="10" placeholder="Write in Markdown..."></textarea>
+      <select id="postCategory">
+        <option>Tutorials</option><option>Bug Diaries</option><option>Developer Humor</option>
+      </select>
+      <input type="text" id="postTags" placeholder="Tags (comma separated)">
+      <button type="submit" class="btn">Publish (needs approval)</button>
+    </form>
+  </div>
+
+  <!-- PROFILE TAB -->
+  <div id="profile" class="tab" style="display:none">
+    <h2>👤 Profile</h2>
+    <div class="glass-card">
+      <img id="profileImg" class="profile-pic" src="/uploads/profiles/default.png">
+      <h3 id="username">Loading...</h3>
+      <span id="verifiedBadge" style="display:none" class="verified-tick">✅ Verified</span>
+      <p>Level: <strong id="userLevel"></strong> | XP: <span id="userXp"></span></p>
+      <p>Bio: <span id="userBio"></span></p>
+      <p>Skills: <span id="userSkills"></span></p>
+      <hr>
+      <h4>Statistics</h4>
+      <p>📝 Posts: <span id="statPosts"></span> | 🐛 Bugs fixed: <span id="statBugs"></span> | ❤️ Likes received: <span id="statLikes"></span></p>
+      <hr>
+      <h4>Edit Profile</h4>
+      <input type="text" id="editUsername" placeholder="New Username">
+      <textarea id="editBio" placeholder="Bio"></textarea>
+      <input type="text" id="editSkills" placeholder="Skills (comma separated)">
+      <button id="updateProfileBtn" class="btn">Update Profile</button>
+      <hr>
+      <h4>Profile Picture</h4>
+      <input type="file" id="uploadProfilePic" accept="image/*">
+      <hr>
+      <h4>Change Password</h4>
+      <div class="input-group">
+        <input type="password" id="currentPassword" placeholder="Current Password">
+        <span class="password-toggle" onclick="togglePassword('currentPassword')">👁️</span>
+      </div>
+      <div class="input-group">
+        <input type="password" id="newPassword" placeholder="New Password">
+        <span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span>
+      </div>
+      <div class="input-group">
+        <input type="password" id="confirmPassword" placeholder="Confirm New Password">
+        <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+      </div>
+      <button id="changePwdBtn" class="btn">Change Password</button>
+      <div id="pwdMessage" class="message" style="display:none;"></div>
+      <hr>
+      <button id="deleteAccountBtn" class="btn" style="background:#550000">Delete Account</button>
+    </div>
+  </div>
+
+  <!-- SAVED POSTS -->
+  <div id="saved" class="tab" style="display:none">
+    <h2>📚 Saved Posts</h2>
+    <div id="savedPostsList"></div>
+  </div>
+</div>
+
+<!-- Logout Countdown Modal -->
+<div id="logoutModal" class="modal">
+  <div class="modal-content">
+    <h2 style="color:#ff004c">👋 Welcome Next Time!</h2>
+    <p>Logging out in</p>
+    <div class="countdown-number" id="countdownNumber">3</div>
+    <p>See you soon, developer.</p>
+  </div>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/user.js"></script>
+<script>
+  // Tab switching
+  document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const tabId = link.dataset.tab;
+      document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
+      document.getElementById(tabId).style.display = 'block';
+    });
+  });
+
+  // Notification dropdown toggle
+  const notifBell = document.getElementById('notifBell');
+  const notifDropdown = document.getElementById('notifDropdown');
+  if (notifBell) {
+    notifBell.addEventListener('click', (e) => {
+      e.stopPropagation();
+      notifDropdown.classList.toggle('show');
+      if (typeof loadNotifications === 'function') loadNotifications();
+    });
+  }
+  document.addEventListener('click', function(e) {
+    const panel = document.querySelector('.notif-panel');
+    if (panel && !panel.contains(e.target) && notifDropdown) {
+      notifDropdown.classList.remove('show');
+    }
+  });
+
+  // LOGOUT WITH COUNTDOWN MESSAGE
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('logoutModal');
+      const countdownSpan = document.getElementById('countdownNumber');
+      let count = 3;
+      modal.style.display = 'flex';
+      countdownSpan.innerText = count;
+      const interval = setInterval(() => {
+        count--;
+        countdownSpan.innerText = count;
+        if (count <= 0) {
+          clearInterval(interval);
+          modal.style.display = 'none';
+          logout(); // defined in common.js
+        }
+      }, 1000);
+    });
+  }
+
+  function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field.type === 'password') field.type = 'text';
+    else field.type = 'password';
+  }
+
+  initTheme();
+  startNotificationPolling();
+</script>
+</body>
+</html>

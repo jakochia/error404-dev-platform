@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 DEV PLATFORM | ENTER</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #0a0a1a, #02020a);
+      font-family: 'Courier New', 'Fira Code', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0,255,255,0.02) 0px, rgba(0,255,255,0.02) 2px, transparent 2px, transparent 6px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+      z-index: 2;
+      position: relative;
+    }
+
+    .glitch-title {
+      font-size: 3.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #00f0ff;
+      text-shadow: -2px 0 #ff004c, 2px 0 #00f0ff;
+      animation: glitch 1.5s infinite;
+      letter-spacing: 6px;
+    }
+
+    @keyframes glitch {
+      0%, 100% { text-shadow: -2px 0 #ff004c, 2px 0 #00f0ff; transform: skew(0deg); }
+      20% { text-shadow: 2px 0 #ff004c, -2px 0 #00f0ff; transform: skew(1deg); }
+      40% { text-shadow: -2px 0 #ff004c, 2px 0 #00f0ff; transform: skew(-1deg); }
+      60% { text-shadow: 2px 0 #ff004c, -2px 0 #00f0ff; transform: skew(0.5deg); }
+      80% { text-shadow: -2px 0 #ff004c, 2px 0 #00f0ff; transform: skew(-0.5deg); }
+    }
+
+    .glass-card {
+      background: rgba(10, 12, 28, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 30px 25px;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: #ff004c;
+      box-shadow: 0 0 40px rgba(255, 0, 76, 0.2);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #1a1f3a;
+      padding-bottom: 10px;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #8892b0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 8px 20px;
+      transition: 0.2s;
+      font-family: monospace;
+      position: relative;
+    }
+
+    .tab-btn.active {
+      color: #00f0ff;
+      text-shadow: 0 0 6px #00f0ff;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -11px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #ff004c;
+      box-shadow: 0 0 8px #ff004c;
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #00f0ff;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+
+    .input-group input {
+      width: 100%;
+      background: #0f111f;
+      border: 1px solid #2a2f4f;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: #e0e0ff;
+      font-size: 1rem;
+      transition: 0.2s;
+      font-family: monospace;
+      padding-right: 45px;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #ff004c;
+      box-shadow: 0 0 8px #ff004c;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      cursor: pointer;
+      color: #8892b0;
+      font-size: 1.2rem;
+      user-select: none;
+      background: none;
+      border: none;
+    }
+
+    .password-toggle:hover {
+      color: #00f0ff;
+    }
+
+    .btn {
+      width: 100%;
+      background: #ff004c;
+      border: none;
+      padding: 12px;
+      border-radius: 40px;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #0b0f1a;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: monospace;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background: #00f0ff;
+      box-shadow: 0 0 15px #00f0ff;
+      transform: scale(1.02);
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: #ff004c;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.85rem;
+      margin-top: 15px;
+      display: inline-block;
+      font-family: monospace;
+    }
+
+    .link-btn:hover {
+      color: #00f0ff;
+    }
+
+    .forgot-link {
+      text-align: right;
+      margin-top: 5px;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .error {
+      background: rgba(255,0,76,0.2);
+      border: 1px solid #ff004c;
+      color: #ff88aa;
+    }
+
+    .success {
+      background: rgba(0,240,255,0.2);
+      border: 1px solid #00f0ff;
+      color: #88ffff;
+    }
+
+    .cyber-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.7rem;
+      color: #ff004c;
+      border-top: 1px dashed #ff004c;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="glitch-title">404 DEV</div>
+  <div class="glass-card">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="login">🔐 LOGIN</button>
+      <button class="tab-btn" data-tab="signup">📝 SIGNUP</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div id="loginPane" class="tab-pane active">
+      <form id="loginForm">
+        <div class="input-group">
+          <label>EMAIL</label>
+          <input type="email" id="loginEmail" placeholder="your@email.com" required>
+        </div>
+        <div class="input-group">
+          <label>PASSWORD</label>
+          <input type="password" id="loginPassword" placeholder="your password" required>
+          <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+        </div>
+        <div class="forgot-link">
+          <button type="button" id="showForgotBtn" class="link-btn">🔓 Forgot password?</button>
+        </div>
+        <button type="submit" class="btn">ENTER THE GRID →</button>
+      </form>
+      <div id="loginMessage" class="message" style="display:none;"></div>
+    </div>
+
+    <!-- SIGNUP PANEL -->
+    <div id="signupPane" class="tab-pane">
+      <form id="signupForm">
+        <div class="input-group">
+          <label>USERNAME</label>
+          <input type="text" id="signupUsername" placeholder="choose a username" required>
+        </div>
+        <div class="input-group">
+          <label>EMAIL</label>
+          <input type="email" id="signupEmail" placeholder="your@email.com" required>
+        </div>
+        <div class="input-group">
+          <label>PASSWORD</label>
+          <input type="password" id="signupPassword" placeholder="create a strong password" required>
+          <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
+        </div>
+        <button type="submit" class="btn">CREATE ACCOUNT →</button>
+      </form>
+      <div id="signupMessage" class="message" style="display:none;"></div>
+    </div>
+  </div>
+  <div class="cyber-footer">
+    >_ SYSTEM READY :: ADMIN: error.404.ke
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div id="forgotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center;">
+  <div class="glass-card" style="max-width:400px; margin:auto; position:relative;">
+    <h3 style="color:#ff004c; margin-bottom:15px;">🔐 RESET ACCESS</h3>
+    <input type="email" id="resetEmail" placeholder="your@email.com" style="width:100%; padding:10px; margin-bottom:15px; background:#0f111f; border:1px solid #00f0ff; color:white;">
+    <button id="sendResetBtn" class="btn" style="background:#00f0ff; color:#0b0f1a;">SEND RESET CODE</button>
+    <button id="closeModalBtn" class="link-btn" style="margin-top:10px; display:block; text-align:center;">Cancel</button>
+    <div id="resetMessage" style="margin-top:10px; font-size:0.8rem; text-align:center;"></div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = '/api';
+
+  function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (field.type === 'password') {
+      field.type = 'text';
+    } else {
+      field.type = 'password';
+    }
+  }
+
+  async function fetchAPI(url, options = {}) {
+    const res = await fetch(API_BASE + url, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options
+    });
+    return res;
+  }
+
+  function setToken(token) {
+    localStorage.setItem('token', token);
+  }
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('loginPane').classList.remove('active');
+      document.getElementById('signupPane').classList.remove('active');
+      if (tab === 'login') document.getElementById('loginPane').classList.add('active');
+      else document.getElementById('signupPane').classList.add('active');
+      document.getElementById('loginMessage').style.display = 'none';
+      document.getElementById('signupMessage').style.display = 'none';
+    });
+  });
+
+  // LOGIN
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const msgDiv = document.getElementById('loginMessage');
+    try {
+      const res = await fetchAPI('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, remember: false })
+      });
+      const data = await res.json();
+      if (data.token) {
+        setToken(data.token);
+        if (data.user.role === 'admin') window.location.href = '/admin-dashboard.html';
+        else window.location.href = '/user-dashboard.html';
+      } else if (data.twoFARequired) {
+        const code = prompt('🔐 2FA required – enter your authenticator code:');
+        if (!code) return;
+        const res2 = await fetchAPI('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password, remember: false, twoFAToken: code })
+        });
+        const data2 = await res2.json();
+        if (data2.token) {
+          setToken(data2.token);
+          window.location.href = data2.user.role === 'admin' ? '/admin-dashboard.html' : '/user-dashboard.html';
+        } else {
+          msgDiv.innerText = 'Invalid 2FA code';
+          msgDiv.className = 'message error';
+          msgDiv.style.display = 'block';
+        }
+      } else {
+        msgDiv.innerText = data.error || 'Login failed';
+        msgDiv.className = 'message error';
+        msgDiv.style.display = 'block';
+      }
+    } catch (err) {
+      msgDiv.innerText = 'Network error';
+      msgDiv.className = 'message error';
+      msgDiv.style.display = 'block';
+    }
+  });
+
+  // SIGNUP
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('signupUsername').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const msgDiv = document.getElementById('signupMessage');
+    try {
+      const res = await fetchAPI('/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({ username, email, password })
+      });
+      const data = await res.json();
+      if (data.token) {
+        setToken(data.token);
+        window.location.href = '/user-dashboard.html';
+      } else {
+        msgDiv.innerText = data.error || 'Signup failed';
+        msgDiv.className = 'message error';
+        msgDiv.style.display = 'block';
+      }
+    } catch (err) {
+      msgDiv.innerText = 'Network error';
+      msgDiv.className = 'message error';
+      msgDiv.style.display = 'block';
+    }
+  });
+
+  // Forgot password modal
+  const modal = document.getElementById('forgotModal');
+  document.getElementById('showForgotBtn').addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+  document.getElementById('closeModalBtn').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+  document.getElementById('sendResetBtn').addEventListener('click', async () => {
+    const email = document.getElementById('resetEmail').value;
+    const msgDiv = document.getElementById('resetMessage');
+    if (!email) {
+      msgDiv.innerText = 'Enter your email';
+      msgDiv.style.color = '#ff004c';
+      return;
+    }
+    const res = await fetchAPI('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msgDiv.innerText = 'Reset token sent to server console (check your terminal)';
+      msgDiv.style.color = '#00f0ff';
+      setTimeout(() => modal.style.display = 'none', 2000);
+    } else {
+      msgDiv.innerText = data.error || 'Email not found';
+      msgDiv.style.color = '#ff004c';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/css/style.css">
+  <title>404 DEV | Toolkit</title>
+  <style>
+    .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px,1fr)); gap: 20px; }
+    .tool-card { background: #0a0c14; padding: 15px; border-radius: 12px; }
+    input, textarea { width: 100%; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="/user-dashboard.html" class="nav-link">🏠 Dashboard</a>
+    <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
+    <a href="/forum.html" class="nav-link">💬 Forum</a>
+    <a href="/playground.html" class="nav-link">🧪 Playground</a>
+    <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
+    <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
+  </div>
+  <div class="container">
+    <h1>🛠️ Developer Toolkit</h1>
+    <div class="tool-grid">
+      <!-- JSON Formatter -->
+      <div class="tool-card glass-card">
+        <h3>📦 JSON Formatter</h3>
+        <textarea id="jsonInput" rows="4" placeholder='{"name":"404"}'></textarea>
+        <button id="formatJson" class="btn">Format</button>
+        <pre id="jsonOutput"></pre>
+      </div>
+      <!-- Regex Tester -->
+      <div class="tool-card glass-card">
+        <h3>🔍 Regex Tester</h3>
+        <input type="text" id="regexPattern" placeholder="Pattern (e.g., \\d+)">
+        <input type="text" id="regexText" placeholder="Test string">
+        <button id="testRegex" class="btn">Test</button>
+        <p id="regexResult"></p>
+      </div>
+      <!-- Password Generator -->
+      <div class="tool-card glass-card">
+        <h3>🔐 Password Generator</h3>
+        <input type="number" id="passLength" value="12" min="4" max="32">
+        <button id="genPass" class="btn">Generate</button>
+        <input type="text" id="generatedPass" readonly>
+      </div>
+      <!-- Code Formatter (JS) -->
+      <div class="tool-card glass-card">
+        <h3>✨ Code Formatter (JS)</h3>
+        <textarea id="codeInput" rows="4" placeholder="function test(){console.log('hello')}"></textarea>
+        <button id="formatCode" class="btn">Pretty Print</button>
+        <pre id="formattedCode"></pre>
+      </div>
+      <!-- API Tester -->
+      <div class="tool-card glass-card">
+        <h3>🌐 API Tester</h3>
+        <input type="text" id="apiUrl" placeholder="https://api.github.com/users/octocat">
+        <select id="apiMethod"><option>GET</option><option>POST</option></select>
+        <button id="testApi" class="btn">Send</button>
+        <pre id="apiResponse"></pre>
+      </div>
+      <!-- Color Picker -->
+      <div class="tool-card glass-card">
+        <h3>🎨 Color Picker</h3>
+        <input type="color" id="colorPicker" value="#00f0ff">
+        <p>Hex: <span id="colorHex">#00f0ff</span></p>
+        <div style="height:50px; background:#00f0ff; border-radius:8px;"></div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/common.js"></script>
+  <script>
+    document.getElementById('formatJson').addEventListener('click', () => {
+      try {
+        const obj = JSON.parse(document.getElementById('jsonInput').value);
+        document.getElementById('jsonOutput').innerText = JSON.stringify(obj, null, 2);
+      } catch(e) { document.getElementById('jsonOutput').innerText = 'Invalid JSON'; }
+    });
+    document.getElementById('testRegex').addEventListener('click', () => {
+      const pattern = document.getElementById('regexPattern').value;
+      const text = document.getElementById('regexText').value;
+      try {
+        const regex = new RegExp(pattern, 'g');
+        const matches = text.match(regex);
+        document.getElementById('regexResult').innerHTML = matches ? `Matches: ${matches.join(', ')}` : 'No matches';
+      } catch(e) { document.getElementById('regexResult').innerHTML = 'Invalid regex'; }
+    });
+    document.getElementById('genPass').addEventListener('click', () => {
+      const len = parseInt(document.getElementById('passLength').value);
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+      let pass = '';
+      for(let i=0;i<len;i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      document.getElementById('generatedPass').value = pass;
+    });
+    document.getElementById('formatCode').addEventListener('click', () => {
+      const code = document.getElementById('codeInput').value;
+      try {
+        const formatted = JSON.stringify(eval('(' + code + ')'), null, 2);
+        document.getElementById('formattedCode').innerText = formatted;
+      } catch(e) {
+        document.getElementById('formattedCode').innerText = 'Unable to format (not a valid object)';
+      }
+    });
+    document.getElementById('testApi').addEventListener('click', async () => {
+      const url = document.getElementById('apiUrl').value;
+      const method = document.getElementById('apiMethod').value;
+      try {
+        const res = await fetch(url, { method });
+        const data = await res.json();
+        document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+      } catch(e) { document.getElementById('apiResponse').innerText = 'Request failed'; }
+    });
+    document.getElementById('colorPicker').addEventListener('input', (e) => {
+      const hex = e.target.value;
+      document.getElementById('colorHex').innerText = hex;
+      document.querySelector('#colorPicker + div').style.backgroundColor = hex;
+    });
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
+</body>
+</html>

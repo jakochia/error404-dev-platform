@@ -1,0 +1,281 @@
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadProfile();
+  await loadFeed();
+  await loadMemes();
+  await loadChallenges();
+  await loadLeaderboard();
+  await loadSavedPosts();
+
+  document.getElementById('updateProfileBtn')?.addEventListener('click', updateProfile);
+  document.getElementById('uploadProfilePic')?.addEventListener('change', uploadProfilePic);
+  document.getElementById('changePwdBtn')?.addEventListener('click', changePassword);
+  document.getElementById('deleteAccountBtn')?.addEventListener('click', deleteAccount);
+  document.getElementById('uploadMemeForm')?.addEventListener('submit', uploadMeme);
+  document.getElementById('createPostForm')?.addEventListener('submit', createPost);
+});
+
+async function loadProfile() {
+  const res = await fetchAuth('/user/profile');
+  const user = await res.json();
+  document.getElementById('username').innerText = user.username;
+  if (user.verifiedTick) document.getElementById('verifiedBadge').style.display = 'inline';
+  if (user.profilePic) document.getElementById('profileImg').src = user.profilePic;
+  document.getElementById('userLevel').innerText = user.level;
+  document.getElementById('userXp').innerText = user.xp;
+  document.getElementById('userBio').innerText = user.bio || 'No bio';
+  document.getElementById('userSkills').innerText = user.skills.join(', ') || 'None';
+  document.getElementById('editUsername').value = user.username;
+  document.getElementById('editBio').value = user.bio || '';
+  document.getElementById('editSkills').value = user.skills.join(', ');
+
+  const analyticsRes = await fetchAuth('/user/analytics');
+  const stats = await analyticsRes.json();
+  document.getElementById('statPosts').innerText = stats.postsCreated;
+  document.getElementById('statBugs').innerText = stats.bugsFixed;
+  document.getElementById('statLikes').innerText = stats.likesReceived;
+}
+
+async function updateProfile() {
+  const username = document.getElementById('editUsername').value;
+  const bio = document.getElementById('editBio').value;
+  const skills = document.getElementById('editSkills').value;
+  const res = await fetchAuth('/user/profile', {
+    method: 'PUT',
+    body: JSON.stringify({ username, bio, skills })
+  });
+  if (res.ok) {
+    showToast('Profile updated');
+    loadProfile();
+  } else showToast('Update failed', true);
+}
+
+async function uploadProfilePic(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('profilePic', file);
+  const token = getToken();
+  const res = await fetch('/api/user/upload-profile', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  });
+  if (res.ok) {
+    showToast('Profile picture updated! You are now verified ✅');
+    loadProfile();
+  } else showToast('Upload failed', true);
+}
+
+async function changePassword() {
+  const current = document.getElementById('currentPassword').value;
+  const newPwd = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+  const msgDiv = document.getElementById('pwdMessage');
+  if (!current || !newPwd) {
+    msgDiv.innerText = 'Please fill all fields';
+    msgDiv.className = 'message error';
+    msgDiv.style.display = 'block';
+    return;
+  }
+  if (newPwd !== confirm) {
+    msgDiv.innerText = 'New passwords do not match';
+    msgDiv.className = 'message error';
+    msgDiv.style.display = 'block';
+    return;
+  }
+  if (newPwd.length < 4) {
+    msgDiv.innerText = 'Password must be at least 4 characters';
+    msgDiv.className = 'message error';
+    msgDiv.style.display = 'block';
+    return;
+  }
+  const res = await fetchAuth('/user/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword: current, newPassword: newPwd })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    msgDiv.innerText = data.message;
+    msgDiv.className = 'message success';
+    msgDiv.style.display = 'block';
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    setTimeout(() => msgDiv.style.display = 'none', 3000);
+  } else {
+    msgDiv.innerText = data.error;
+    msgDiv.className = 'message error';
+    msgDiv.style.display = 'block';
+  }
+}
+
+async function deleteAccount() {
+  if (confirm('⚠️ Delete account permanently? All your posts and memes will be gone.')) {
+    const res = await fetchAuth('/user/delete-account', { method: 'DELETE' });
+    if (res.ok) logout();
+  }
+}
+
+async function uploadMeme(e) {
+  e.preventDefault();
+  const title = document.getElementById('memeTitle').value;
+  const file = document.getElementById('memeFile').files[0];
+  if (!title || !file) return;
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('meme', file);
+  const token = getToken();
+  const res = await fetch('/api/memes/upload', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  });
+  if (res.ok) {
+    showToast('Meme uploaded!');
+    document.getElementById('uploadMemeForm').reset();
+    loadMemes();
+  } else showToast('Upload failed', true);
+}
+
+async function loadMemes() {
+  const res = await fetchAuth('/memes');
+  const memes = await res.json();
+  const container = document.getElementById('memesFeed');
+  container.innerHTML = '';
+  memes.forEach(meme => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <img src="${meme.url}" width="100%">
+      <p><strong>${meme.title}</strong> by ${meme.authorName} ${meme.authorVerified ? '✅' : ''}</p>
+      <button class="btn meme-like" data-id="${meme.id}">❤️ ${meme.likes.length}</button>
+    `;
+    container.appendChild(div);
+  });
+  document.querySelectorAll('.meme-like').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      await fetchAuth(`/memes/${id}/like`, { method: 'POST' });
+      loadMemes();
+    });
+  });
+}
+
+async function loadFeed() {
+  const res = await fetchAuth('/posts');
+  const posts = await res.json();
+  const container = document.getElementById('postsFeed');
+  container.innerHTML = '';
+  for (const post of posts) {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <h3>${post.title}</h3>
+      <small>by ${post.authorName} ${post.authorVerified ? '✅' : ''} | ${new Date(post.createdAt).toLocaleString()}</small>
+      <p>${post.content.substring(0, 200)}...</p>
+      <button class="btn like-btn" data-id="${post.id}">❤️ ${post.likes.length}</button>
+      <button class="btn-small save-btn" data-id="${post.id}">🔖 Save</button>
+      <button class="btn-small report-btn" data-id="${post.id}">🚨 Report</button>
+    `;
+    container.appendChild(div);
+  }
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      await fetchAuth(`/posts/${id}/like`, { method: 'POST' });
+      loadFeed();
+    });
+  });
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      await fetchAuth(`/posts/${id}/save`, { method: 'POST' });
+      showToast('Saved!');
+    });
+  });
+  document.querySelectorAll('.report-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const reason = prompt('Why report this post?');
+      if (reason) reportContent('post', btn.dataset.id, reason);
+    });
+  });
+}
+
+async function loadChallenges() {
+  const res = await fetchAuth('/challenges');
+  const challenges = await res.json();
+  const container = document.getElementById('challengesList');
+  container.innerHTML = '';
+  challenges.forEach(ch => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <h3>${ch.title}</h3>
+      <pre><code>${ch.brokenCode}</code></pre>
+      <textarea id="sol-${ch.id}" placeholder="Your fix..."></textarea>
+      <button class="btn submit-challenge" data-id="${ch.id}" data-reward="${ch.xpReward}">Submit</button>
+      <span id="result-${ch.id}"></span>
+    `;
+    container.appendChild(div);
+  });
+  document.querySelectorAll('.submit-challenge').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const challengeId = btn.dataset.id;
+      const solution = document.getElementById(`sol-${challengeId}`).value;
+      const res = await fetchAuth('/challenges/submit', {
+        method: 'POST',
+        body: JSON.stringify({ challengeId, userSolution: solution })
+      });
+      const data = await res.json();
+      if (data.correct) {
+        showToast(`✅ Correct! +${data.xpGained} XP`);
+        loadProfile();
+        loadLeaderboard();
+      } else showToast('❌ Wrong solution. Try again!', true);
+    });
+  });
+}
+
+async function loadLeaderboard() {
+  const res = await fetchAuth('/leaderboard');
+  const data = await res.json();
+  const lbDiv = document.getElementById('leaderboard');
+  if (lbDiv) {
+    lbDiv.innerHTML = '<ul>';
+    data.forEach((u, i) => {
+      lbDiv.innerHTML += `<li>${i+1}. ${u.username} ${u.verifiedTick ? '✅' : ''} - ${u.xp} XP (${u.level})</li>`;
+    });
+    lbDiv.innerHTML += '</ul>';
+  }
+}
+
+async function loadSavedPosts() {
+  const res = await fetchAuth('/user/saved-posts');
+  const posts = await res.json();
+  const container = document.getElementById('savedPostsList');
+  if (container) {
+    container.innerHTML = '';
+    posts.forEach(post => {
+      const div = document.createElement('div');
+      div.className = 'glass-card';
+      div.innerHTML = `<h3>${post.title}</h3><p>${post.content.substring(0, 150)}...</p>`;
+      container.appendChild(div);
+    });
+  }
+}
+
+async function createPost(e) {
+  e.preventDefault();
+  const title = document.getElementById('postTitle').value;
+  const content = document.getElementById('postContent').value;
+  const category = document.getElementById('postCategory').value;
+  const tags = document.getElementById('postTags').value;
+  const res = await fetchAuth('/posts', {
+    method: 'POST',
+    body: JSON.stringify({ title, content, category, tags })
+  });
+  if (res.ok) {
+    showToast('Post created, pending admin approval');
+    e.target.reset();
+  } else showToast('Failed', true);
+}

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>⚡ 404::DEVCORE | Neural Glitch Network</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      cursor: none;
+    }
+
+    body {
+      background: #05070f;
+      font-family: 'Inter', 'JetBrains Mono', monospace;
+      overflow-x: hidden;
+      color: #eef5ff;
+    }
+
+    /* custom cursor */
+    .cursor-follower {
+      position: fixed;
+      width: 28px;
+      height: 28px;
+      border: 2px solid #ff1a6e;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transition: 0.08s linear;
+      mix-blend-mode: difference;
+      box-shadow: 0 0 12px #ff1a6e;
+    }
+    .cursor-dot {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background: #00f0ff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transition: 0.05s linear;
+    }
+
+    /* canvas particles background */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      display: block;
+    }
+
+    /* scanline overlay */
+    .scan-line {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.02) 0px, rgba(0, 255, 255, 0.02) 2px, transparent 2px, transparent 6px);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .glow-overlay {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 0, 100, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* main content */
+    .main-wrapper {
+      position: relative;
+      z-index: 20;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 3rem;
+    }
+
+    /* header with neon pulse */
+    .neon-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      backdrop-filter: blur(16px);
+      background: rgba(5, 10, 25, 0.5);
+      border-radius: 2rem;
+      padding: 0.7rem 1.8rem;
+      border: 1px solid rgba(255, 26, 110, 0.5);
+      margin-bottom: 3rem;
+      box-shadow: 0 0 12px rgba(255, 26, 110, 0.2);
+    }
+
+    .badge-glitch {
+      font-family: monospace;
+      background: #ff1a6e20;
+      padding: 0.3rem 1.1rem;
+      border-radius: 2rem;
+      border-left: 3px solid #ff1a6e;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .sys-stats {
+      display: flex;
+      gap: 20px;
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+
+    .sys-stats span {
+      color: #0ff;
+      text-shadow: 0 0 5px #0ff;
+    }
+
+    /* hero 3d tilt section */
+    .hero-zone {
+      text-align: center;
+      margin: 2rem 0 2rem;
+      position: relative;
+    }
+
+    .glitch-404 {
+      font-size: clamp(4rem, 15vw, 10rem);
+      font-weight: 900;
+      font-family: 'Inter', 'Courier New', monospace;
+      letter-spacing: -4px;
+      position: relative;
+      animation: glitchText 2.5s infinite;
+      background: linear-gradient(135deg, #ff1a6e, #00f0ff, #ff1a6e);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 18px #ff1a6e80;
+    }
+
+    @keyframes glitchText {
+      0%, 100% { transform: skew(0deg, 0deg); opacity: 1; text-shadow: 0 0 5px #ff1a6e; }
+      95% { transform: skew(0deg, 0deg); opacity: 1; }
+      96% { transform: skew(2deg, 1deg); text-shadow: -3px 0 red, 3px 0 cyan; }
+      97% { transform: skew(-1deg, -0.5deg); text-shadow: 2px 0 cyan, -2px 0 red; }
+      98% { transform: skew(0deg, 0deg); }
+    }
+
+    .error-png-symbol {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(20px);
+      padding: 0.6rem 1.6rem;
+      border-radius: 60px;
+      border: 1px solid #ff1a6e;
+      margin: 20px 0;
+      font-family: monospace;
+      font-weight: bold;
+      animation: pulseBorder 1.8s infinite;
+    }
+
+    @keyframes pulseBorder {
+      0% { border-color: #ff1a6e; box-shadow: 0 0 0px #ff1a6e; }
+      50% { border-color: #00f0ff; box-shadow: 0 0 12px #00f0ff; }
+      100% { border-color: #ff1a6e; box-shadow: 0 0 0px #ff1a6e; }
+    }
+
+    .neon-tagline {
+      font-size: 1.4rem;
+      background: linear-gradient(120deg, #fff, #ffb3d1);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      font-weight: 500;
+    }
+
+    /* terminal mimic */
+    .live-terminal {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 1rem 1.5rem;
+      max-width: 550px;
+      margin: 1.8rem auto;
+      border: 1px solid rgba(0, 240, 255, 0.6);
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 25px -8px black;
+    }
+
+    .terminal-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .prompt {
+      color: #0ff;
+      font-weight: bold;
+    }
+
+    .typed-msg {
+      color: #ffb86b;
+    }
+
+    .cursor-block {
+      background: #0ff;
+      width: 10px;
+      height: 18px;
+      display: inline-block;
+      animation: blinkBlock 1s step-end infinite;
+    }
+
+    @keyframes blinkBlock {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .btn-magnetic {
+      background: linear-gradient(145deg, #ff004c, #b00035);
+      border: none;
+      padding: 14px 40px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border-radius: 60px;
+      color: white;
+      transition: all 0.2s ease;
+      margin-top: 18px;
+      box-shadow: 0 0 12px #ff004c;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .btn-magnetic:hover {
+      transform: scale(1.03);
+      background: linear-gradient(145deg, #00c3ff, #0077aa);
+      box-shadow: 0 0 28px #00f0ff;
+      letter-spacing: 1.5px;
+    }
+
+    /* card grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+      margin: 4rem 0 2rem;
+    }
+
+    .cyber-card {
+      background: rgba(8, 12, 28, 0.55);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 26px 20px;
+      border: 1px solid rgba(255, 26, 110, 0.3);
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      transform-style: preserve-3d;
+    }
+
+    .cyber-card:hover {
+      border-color: #0ff;
+      transform: translateY(-8px) scale(1.01);
+      background: rgba(15, 22, 45, 0.8);
+      box-shadow: 0 20px 35px -12px #0ff30;
+    }
+
+    .card-icon {
+      font-size: 2.8rem;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 4px #ff1a6e);
+    }
+
+    .cyber-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      background: linear-gradient(145deg, #fff, #ff8db5);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .cyber-card p {
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px dashed rgba(255, 26, 110, 0.4);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 780px) {
+      .main-wrapper {
+        padding: 1rem;
+      }
+      .neon-header {
+        flex-direction: column;
+        align-items: center;
+      }
+      .terminal-line {
+        font-size: 0.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- cursor effects -->
+  <div class="cursor-dot"></div>
+  <div class="cursor-follower"></div>
+
+  <canvas id="particle-canvas"></canvas>
+  <div class="scan-line"></div>
+  <div class="glow-overlay"></div>
+
+  <div class="main-wrapper">
+    <div class="neon-header">
+      <div class="badge-glitch">
+        ⚡ ERROR 404 // DEV_CORE [ACTIVE]
+      </div>
+      <div class="sys-stats">
+        <span>✦ NODE: REBELLION_404</span>
+        <span>✦ GLITCH_LEVEL: ∞</span>
+        <span>✦ USERS ONLINE: 2.3k</span>
+      </div>
+    </div>
+
+    <div class="hero-zone">
+      <div class="glitch-404" data-text="404">404</div>
+      <!-- error.png reference integrated as interactive chip -->
+      <div class="error-png-symbol">
+        <span>📁 error.png</span>
+        <span style="color:#ff1a6e;">⚠️ 404 NOT FOUND</span>
+        <span style="color:#0ff;">⎯⟢ SYSTEM_SHIFT</span>
+      </div>
+      <div class="neon-tagline">✦ SYSTEM FOUND: DEVELOPERS ✦</div>
+      
+      <!-- Live interactive terminal -->
+      <div class="live-terminal" id="liveTerminal">
+        <div class="terminal-line">
+          <span class="prompt">root@404lab:~$</span>
+          <span id="terminalText" class="typed-msg">scanning_errors.exe --fix</span>
+          <span class="cursor-block"></span>
+        </div>
+      </div>
+
+      <button class="btn-magnetic" id="enterGridBtn">⟢ ENTER THE GRID ⟣</button>
+    </div>
+
+    <!-- Feature cards with modern styling -->
+    <div class="card-grid">
+      <div class="cyber-card"><div class="card-icon">🧩</div><h3>Debug Arena</h3><p>Fix broken code, earn XP, climb global leaderboards. Real-time duels.</p></div>
+      <div class="cyber-card"><div class="card-icon">📝</div><h3>Dev Blogs</h3><p>Write bug diaries, tutorials, and tech humor. Share your rebellion.</p></div>
+      <div class="cyber-card"><div class="card-icon">😂</div><h3>Meme Zone</h3><p>Share coding memes, vote for weekly best. Laugh & debug.</p></div>
+      <div class="cyber-card"><div class="card-icon">💬</div><h3>Community Hub</h3><p>Forums, code reviews, dev chats. Connect globally.</p></div>
+      <div class="cyber-card"><div class="card-icon">🛠️</div><h3>Toolkit</h3><p>JSON formatter, regex tester, password generator — pro stack.</p></div>
+      <div class="cyber-card"><div class="card-icon">🏆</div><h3>Gamification</h3><p>Badges, levels, challenges. Unlock legendary dev status.</p></div>
+    </div>
+
+    <footer>
+      ⚡ 404 Developer Platform — where every error is a lesson<br>
+      <span style="color:#ff1a6e;">Admin:</span> error.404.ke | <span style="color:#0ff;">Join the rebellion #404Legends</span>
+      <div style="margin-top: 12px; font-size: 0.7rem;">[ neural terminal online • glitch infinite ]</div>
+    </footer>
+  </div>
+
+  <script>
+    // ---------- CURSOR FOLLOW ----------
+    const cursorDot = document.querySelector('.cursor-dot');
+    const cursorFollower = document.querySelector('.cursor-follower');
+    document.addEventListener('mousemove', (e) => {
+      cursorDot.style.transform = `translate(${e.clientX - 3}px, ${e.clientY - 3}px)`;
+      cursorFollower.style.transform = `translate(${e.clientX - 14}px, ${e.clientY - 14}px)`;
+    });
+    document.addEventListener('mouseleave', () => {
+      cursorDot.style.opacity = '0';
+      cursorFollower.style.opacity = '0';
+    });
+    document.addEventListener('mouseenter', () => {
+      cursorDot.style.opacity = '1';
+      cursorFollower.style.opacity = '1';
+    });
+
+    // ---------- PARTICLE NETWORK (3Dish) ----------
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    const PARTICLE_COUNT = 110;
+    const CONNECT_DIST = 150;
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.size = Math.random() * 2 + 1.2;
+        this.color = `rgba(255, ${Math.floor(80 + Math.random() * 100)}, 150, ${Math.random() * 0.6 + 0.2})`;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0) this.x = width;
+        if (this.x > width) this.x = 0;
+        if (this.y < 0) this.y = height;
+        if (this.y > height) this.y = 0;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#ff1a6e';
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function drawLines() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < CONNECT_DIST) {
+            const opacity = (1 - dist / CONNECT_DIST) * 0.25;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 220, 255, ${opacity})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animateParticles() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+      for (let p of particles) {
+        p.update();
+        p.draw();
+      }
+      drawLines();
+      requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      initParticles();
+    });
+    resizeCanvas();
+    initParticles();
+    animateParticles();
+
+    // Terminal dynamic message sequence (very engaging)
+    const terminalMsgElem = document.getElementById('terminalText');
+    const messages = [
+      ">_ error.png not found... but rebellion loaded.",
+      ">_ scanning for bugs: 0x7E1 vulnerabilities patched",
+      ">_ injecting neon_glitch... complete.",
+      ">_ 404 developers active, join the grid.",
+      ">_ where bugs become legends | access granted"
+    ];
+    let msgIndex = 0;
+    function cycleTerminalMessages() {
+      if (!terminalMsgElem) return;
+      let fullMsg = messages[msgIndex];
+      let i = 0;
+      function typeChar() {
+        if (i <= fullMsg.length) {
+          terminalMsgElem.textContent = fullMsg.substring(0, i);
+          i++;
+          setTimeout(typeChar, 45);
+        } else {
+          setTimeout(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            cycleTerminalMessages();
+          }, 2800);
+        }
+      }
+      typeChar();
+    }
+    cycleTerminalMessages();
+
+    // Magnetic button effect + redirect
+    const btn = document.getElementById('enterGridBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        // simulated awesome transition before redirect 
+        btn.textContent = '⟢ BOOTING... ⟣';
+        btn.style.opacity = '0.8';
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 500);
+      });
+      // magnetic effect on mouse move
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.02)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = 'translate(0px, 0px) scale(1)';
+      });
+    }
+
+    // Additional 3D tilt effect on 404 text
+    const glitchEl = document.querySelector('.glitch-404');
+    document.addEventListener('mousemove', (e) => {
+      if (!glitchEl) return;
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+      glitchEl.style.transform = `rotateX(${yAxis * 0.3}deg) rotateY(${xAxis * 0.3}deg) translateZ(10px)`;
+    });
+
+    // random glitch effect on .error-png-symbol each 4 sec
+    const pngMock = document.querySelector('.error-png-symbol');
+    if (pngMock) {
+      setInterval(() => {
+        pngMock.style.transform = 'skew(1deg, 0.5deg)';
+        setTimeout(() => { pngMock.style.transform = ''; }, 120);
+      }, 3800);
+    }
+
+    console.log("%c🔥 ERROR 404 // NOT FOUND // BUT THE REBELLION IS HERE 🔥", "color: #ff1a6e; font-size: 18px; font-weight: bold; font-family: monospace");
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="/css/style.css"><title>Messages & Groups</title>
+<style>
+  .chat-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+  .sidebar-chat { flex: 1; min-width: 250px; background: #0a0c14; border-radius: 12px; padding: 15px; }
+  .chat-area { flex: 2; min-width: 300px; background: #0a0c14; border-radius: 12px; padding: 15px; }
+  .online-dot { display: inline-block; width: 8px; height: 8px; background: #00ff00; border-radius: 50%; margin-left: 8px; }
+  .group-item, .user-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #333; }
+  .group-item:hover, .user-item:hover { background: #1a1f2e; }
+</style>
+</head>
+<body>
+<div class="navbar"><a href="/user-dashboard.html">🏠 Dashboard</a> <button id="themeToggle" class="btn-small">🌓</button> <a href="#" id="logoutBtn">Logout</a></div>
+<div class="container">
+  <h1>💬 Messages & Groups</h1>
+  <div class="chat-layout">
+    <div class="sidebar-chat glass-card">
+      <h3>👥 Groups</h3>
+      <button id="createGroupBtn" class="btn-small">+ Create Group</button>
+      <div id="groupsList"></div>
+      <hr>
+      <h3>🟢 Online Users</h3>
+      <div id="onlineUsersList"></div>
+      <hr>
+      <h3>📩 Direct Conversations</h3>
+      <div id="convList"></div>
+    </div>
+    <div class="chat-area glass-card">
+      <h3 id="chatHeader">Select a conversation</h3>
+      <div id="chatMessages" style="height:400px; overflow-y:auto; background:#0f111f; padding:10px; border-radius:8px;"></div>
+      <textarea id="msgInput" rows="2" placeholder="Type message..."></textarea>
+      <button id="sendMsg" class="btn">Send</button>
+    </div>
+  </div>
+</div>
+<!-- Group creation modal -->
+<div id="groupModal" style="display:none; position:fixed; top:20%; left:30%; background:#0b0f1a; border:2px solid #ff004c; padding:20px; width:40%; z-index:1000;">
+  <h3>Create New Group</h3>
+  <input type="text" id="groupName" placeholder="Group Name" style="width:100%"><br>
+  <p>Select members (click to add):</p>
+  <div id="memberSelector" style="max-height:200px; overflow-y:auto;"></div>
+  <button id="createGroupSubmit" class="btn">Create</button>
+  <button id="closeGroupModal" class="btn" style="background:#333">Cancel</button>
+</div>
+<script src="/js/common.js"></script>
+<script>
+let currentChatType = null; // 'user' or 'group'
+let currentChatId = null;
+let onlineUsers = [];
+
+async function loadOnlineUsers() {
+  const res = await fetchAuth('/online-users');
+  onlineUsers = await res.json();
+  const container = document.getElementById('onlineUsersList');
+  container.innerHTML = onlineUsers.map(u => `<div class="user-item" onclick="startDM('${u.id}', '${u.username}')">${u.username}<span class="online-dot"></span></div>`).join('');
+}
+
+async function loadConversations() {
+  const res = await fetchAuth('/conversations');
+  const convs = await res.json();
+  const div = document.getElementById('convList');
+  div.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${c.otherName}')"><strong>${c.otherName}</strong><br><small>${c.lastMsg}</small></div>`).join('');
+}
+
+async function loadGroups() {
+  const res = await fetchAuth('/groups');
+  const groups = await res.json();
+  const div = document.getElementById('groupsList');
+  div.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${g.name}')">👥 ${g.name}</div>`).join('');
+}
+
+window.startDM = async function(otherId, name) {
+  currentChatType = 'user';
+  currentChatId = otherId;
+  document.getElementById('chatHeader').innerText = `Chat with ${name}`;
+  const res = await fetchAuth(`/messages/${otherId}`);
+  const msgs = await res.json();
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = msgs.map(m => `<div style="text-align:${m.from === localStorage.getItem('userId') ? 'right' : 'left'}; margin:8px;"><b>${m.from === localStorage.getItem('userId') ? 'You' : name}:</b> ${m.text}</div>`).join('');
+};
+
+window.openGroup = async function(groupId, name) {
+  currentChatType = 'group';
+  currentChatId = groupId;
+  document.getElementById('chatHeader').innerText = `Group: ${name}`;
+  const res = await fetchAuth(`/groups/${groupId}/messages`);
+  const msgs = await res.json();
+  const container = document.getElementById('chatMessages');
+  const users = await (await fetchAuth('/admin/users')).json();
+  container.innerHTML = msgs.map(m => {
+    const userName = users.find(u => u.id === m.from)?.username || m.from;
+    return `<div><b>${userName}:</b> ${m.text}</div>`;
+  }).join('');
+};
+
+document.getElementById('sendMsg').onclick = async () => {
+  const text = document.getElementById('msgInput').value;
+  if (!text || !currentChatId) return;
+  if (currentChatType === 'user') {
+    await fetchAuth('/messages', { method:'POST', body: JSON.stringify({ to: currentChatId, text }) });
+  } else if (currentChatType === 'group') {
+    await fetchAuth(`/groups/${currentChatId}/message`, { method:'POST', body: JSON.stringify({ text }) });
+  }
+  document.getElementById('msgInput').value = '';
+  if (currentChatType === 'user') startDM(currentChatId, document.getElementById('chatHeader').innerText.replace('Chat with ',''));
+  else openGroup(currentChatId, document.getElementById('chatHeader').innerText.replace('Group: ',''));
+};
+
+// Group creation
+document.getElementById('createGroupBtn').onclick = async () => {
+  const usersRes = await fetchAuth('/admin/users');
+  const allUsers = await usersRes.json();
+  const container = document.getElementById('memberSelector');
+  container.innerHTML = allUsers.map(u => `<label><input type="checkbox" value="${u.id}"> ${u.username}</label><br>`).join('');
+  document.getElementById('groupModal').style.display = 'block';
+};
+document.getElementById('createGroupSubmit').onclick = async () => {
+  const name = document.getElementById('groupName').value;
+  const checkboxes = document.querySelectorAll('#memberSelector input:checked');
+  const members = Array.from(checkboxes).map(cb => cb.value);
+  await fetchAuth('/groups', { method: 'POST', body: JSON.stringify({ name, members }) });
+  document.getElementById('groupModal').style.display = 'none';
+  loadGroups();
+};
+document.getElementById('closeGroupModal').onclick = () => document.getElementById('groupModal').style.display = 'none';
+
+// Online status: send heartbeat every 30 sec
+async function updateOnlineStatus() {
+  await fetchAuth('/online', { method: 'POST' });
+}
+updateOnlineStatus();
+setInterval(updateOnlineStatus, 30000);
+window.addEventListener('beforeunload', () => {
+  fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
+});
+
+loadOnlineUsers();
+loadConversations();
+loadGroups();
+document.getElementById('logoutBtn').onclick = () => {
+  fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
+  logout();
+};
+initTheme();
+</script>
+</body>
+</html>
