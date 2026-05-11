@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const SECRET = '404_DEV_SECRET_GLITCH';
+const SECRET = process.env.JWT_SECRET || '404_DEV_SECRET_GLITCH';
 
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;

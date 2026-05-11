@@ -1,21 +1,294 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <link rel="stylesheet" href="/css/style.css">
-  <title>404 DEV | User Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>404 DEV | Sidebar Dashboard</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 (free icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    body.light .glass-card { background: rgba(255,255,255,0.9); color: #1a1f2e; }
-    body.light .navbar a { color: #1a1f2e; }
-    .password-toggle { cursor: pointer; margin-left: 8px; }
-    .input-group { position: relative; margin-bottom: 15px; }
-    .input-group input { width: 100%; padding-right: 35px; }
-    .password-toggle { position: absolute; right: 10px; top: 35px; cursor: pointer; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 20% 30%, #0a0c18, #020408);
+      color: #eef5ff;
+      transition: background 0.2s, color 0.2s;
+      overflow-x: hidden;
+    }
+
+    /* light theme */
+    body.light {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    body.light .sidebar {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    body.light .sidebar-item {
+      color: #1e293b;
+    }
+    body.light .sidebar-item:hover,
+    body.light .sidebar-item.active {
+      background: rgba(0, 0, 0, 0.05);
+      color: #0f2b5e;
+    }
+    body.light .main-content {
+      background: rgba(245, 248, 250, 0.6);
+    }
+    body.light .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      color: #0f172a;
+    }
+    body.light .post-card,
+    body.light .meme-card {
+      background: rgba(240, 245, 250, 0.9);
+    }
+
+    /* ========= SIDEBAR LAYOUT ========= */
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR (desktop) */
+    .sidebar {
+      width: 280px;
+      background: rgba(8, 12, 22, 0.85);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(0, 240, 255, 0.25);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, width 0.2s;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 1200;
+      overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 1.8rem 1.5rem;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    }
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(125deg, #00f0ff, #ff3b7c);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0.75rem 1rem;
+      border-radius: 16px;
+      font-weight: 500;
+      color: #ccdeee;
+      transition: 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .sidebar-item i {
+      width: 24px;
+      font-size: 1.2rem;
+    }
+    .sidebar-item:hover {
+      background: rgba(0, 240, 255, 0.12);
+      color: #00f0ff;
+      transform: translateX(4px);
+    }
+    .sidebar-item.active {
+      background: rgba(0, 240, 255, 0.2);
+      color: #00f0ff;
+      border-left: 3px solid #00f0ff;
+    }
+    .sidebar-footer {
+      padding: 1.5rem 1rem;
+      border-top: 1px solid rgba(0, 240, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      transition: margin-left 0.3s;
+      min-height: 100vh;
+      background: rgba(5, 8, 16, 0.4);
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      color: #00f0ff;
+      cursor: pointer;
+    }
+    .right-tools {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .notif-panel {
+      position: relative;
+    }
+    #notifBell {
+      cursor: pointer;
+      font-size: 1.4rem;
+      background: rgba(0, 240, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 40px;
+    }
+    .notif-dropdown {
+      position: absolute;
+      right: 0;
+      top: 48px;
+      width: 320px;
+      background: #0e1222e6;
+      backdrop-filter: blur(20px);
+      border: 1px solid #ff3b7c;
+      border-radius: 20px;
+      display: none;
+      z-index: 1100;
+    }
+    .notif-dropdown.show {
+      display: block;
+    }
+    .btn-icon {
+      background: rgba(0,240,255,0.1);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+    }
+
+    .container {
+      padding: 2rem;
+      max-width: 1400px;
+    }
+
+    /* cards */
+    .glass-card {
+      background: rgba(12, 18, 28, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .feed-grid, .memes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .post-card, .meme-card {
+      background: rgba(20, 28, 44, 0.75);
+      border-radius: 24px;
+      padding: 1.2rem;
+      border: 1px solid rgba(0,240,255,0.2);
+      transition: 0.2s;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(0,240,255,0.4);
+      border-radius: 28px;
+      margin-bottom: 1rem;
+      color: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(95deg, #0f2b5e, #c81e6b);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 100%;
+      object-fit: cover;
+      border: 3px solid #00f0ff;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 18px;
+      top: 38px;
+      cursor: pointer;
+    }
+    .input-group {
+      position: relative;
+    }
+
+    /* Mobile styles */
+    @media (max-width: 880px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .menu-toggle {
+        display: block;
+      }
+      .container {
+        padding: 1rem;
+      }
+      .top-bar {
+        padding: 0.8rem 1rem;
+      }
+    }
+
+    /* Modal */
     .modal {
       display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.85);
       backdrop-filter: blur(8px);
       z-index: 2000;
       align-items: center;
@@ -23,181 +296,264 @@
     }
     .modal-content {
       background: #0b0f1a;
-      border: 2px solid #ff004c;
-      border-radius: 24px;
-      padding: 30px;
+      border: 2px solid #ff3b7c;
+      border-radius: 32px;
+      padding: 2rem;
       text-align: center;
-      max-width: 400px;
+      max-width: 340px;
     }
-    .countdown-number { font-size: 4rem; color: #00f0ff; margin: 20px 0; }
-    /* Notification panel */
-    .notif-panel { position: relative; display: inline-block; }
-    .notif-dropdown {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 35px;
-      width: 320px;
-      max-height: 400px;
-      overflow-y: auto;
-      background: #0b0f1a;
-      border: 1px solid #ff004c;
-      border-radius: 12px;
-      z-index: 1000;
-      box-shadow: 0 0 20px rgba(0,240,255,0.2);
+    .countdown-number {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #00f0ff;
     }
-    .notif-dropdown.show { display: block; }
-    .notif-item {
-      padding: 10px;
-      border-bottom: 1px solid #1a1f3a;
-      cursor: pointer;
-      transition: 0.2s;
+    hr {
+      border-color: rgba(0,240,255,0.2);
+      margin: 1rem 0;
     }
-    .notif-item:hover { background: #1a1f2e; }
-    .notif-item.unread { background: rgba(0,240,255,0.1); border-left: 3px solid #00f0ff; }
-    .notif-time { font-size: 0.7rem; color: #8892b0; }
   </style>
 </head>
 <body>
-<div class="navbar">
-  <a href="#" class="nav-link" data-tab="feed">🔥 Feed</a>
-  <a href="#" class="nav-link" data-tab="memes">😂 Meme Zone</a>
-  <a href="#" class="nav-link" data-tab="arena">🧩 Debug Arena</a>
-  <a href="#" class="nav-link" data-tab="blog">📝 Write Blog</a>
-  <a href="#" class="nav-link" data-tab="profile">👤 Profile</a>
-  <a href="#" class="nav-link" data-tab="saved">📚 Saved</a>
-  <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
-  <a href="/forum.html" class="nav-link">💬 Forum</a>
-  <a href="/playground.html" class="nav-link">🧪 Playground</a>
-  <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
-  <a href="/messages.html" class="nav-link">💬 Messages</a>
-  <div class="notif-panel">
-    <span id="notifBell" style="cursor:pointer;">🔔 <span id="notifBadge" style="background:#ff004c; border-radius:50%; padding:2px 6px; font-size:0.7rem;"></span></span>
-    <div id="notifDropdown" class="notif-dropdown">
-      <div style="padding:10px; border-bottom:1px solid #ff004c;"><strong>Notifications</strong></div>
-      <div id="notifList">Loading...</div>
+<div class="app-wrapper">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">◢ 4Ø4_DEV <span style="font-size:0.8rem;">//hub</span></div>
     </div>
-  </div>
-  <button id="themeToggle" class="btn-small">🌓</button>
-  <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
+    <div class="sidebar-nav">
+      <div class="sidebar-item active" data-tab="feed"><i class="fas fa-fire"></i> <span>Feed</span></div>
+      <div class="sidebar-item" data-tab="memes"><i class="fas fa-laugh-squint"></i> <span>Meme Zone</span></div>
+      <div class="sidebar-item" data-tab="arena"><i class="fas fa-puzzle-piece"></i> <span>Debug Arena</span></div>
+      <div class="sidebar-item" data-tab="blog"><i class="fas fa-pen-fancy"></i> <span>Write Blog</span></div>
+      <div class="sidebar-item" data-tab="profile"><i class="fas fa-user-astronaut"></i> <span>Profile</span></div>
+      <div class="sidebar-item" data-tab="saved"><i class="fas fa-bookmark"></i> <span>Saved</span></div>
+      <div style="margin-top: 16px; border-top: 1px solid rgba(0,240,255,0.2); padding-top: 12px;"></div>
+      <div class="sidebar-item" data-link="/coding-hub.html"><i class="fas fa-code"></i> <span>Coding Hub</span></div>
+      <div class="sidebar-item" data-link="/forum.html"><i class="fas fa-comments"></i> <span>Forum</span></div>
+      <div class="sidebar-item" data-link="/playground.html"><i class="fas fa-flask"></i> <span>Playground</span></div>
+      <div class="sidebar-item" data-link="/toolkit.html"><i class="fas fa-toolbox"></i> <span>Toolkit</span></div>
+      <div class="sidebar-item" data-link="/messages.html"><i class="fas fa-envelope"></i> <span>Messages</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-item" id="themeSideBtn"><i class="fas fa-adjust"></i> <span>Theme</span></div>
+      <div class="sidebar-item" id="logoutSideBtn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <div class="top-bar">
+      <button class="menu-toggle" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+      <div class="right-tools">
+        <div class="notif-panel">
+          <span id="notifBell"><i class="fas fa-bell"></i> <span id="notifBadge" style="background:#ff004c; border-radius:50%; padding:2px 6px; font-size:0.7rem;"></span></span>
+          <div id="notifDropdown" class="notif-dropdown">
+            <div style="padding:12px; border-bottom:1px solid #ff3b7c;"><strong>Notifications</strong></div>
+            <div id="notifList">✨ Ready</div>
+          </div>
+        </div>
+        <button id="themeToggleTop" class="btn-icon"><i class="fas fa-moon"></i> Theme</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- FEED -->
+      <div id="feed" class="tab active">
+        <h2><i class="fas fa-rss"></i> Activity Feed</h2>
+        <div id="postsFeed" class="feed-grid"></div>
+      </div>
+      <!-- MEME ZONE -->
+      <div id="memes" class="tab" style="display:none">
+        <h2><i class="fas fa-laugh-beam"></i> Meme Zone</h2>
+        <div id="memesFeed" class="memes-grid"></div>
+        <div class="glass-card" style="margin-top: 2rem;">
+          <h3>Upload Meme</h3>
+          <form id="uploadMemeForm" enctype="multipart/form-data">
+            <input type="text" id="memeTitle" placeholder="Title" required>
+            <input type="file" id="memeFile" accept="image/*" required>
+            <button type="submit" class="btn-primary"><i class="fas fa-upload"></i> Upload</button>
+          </form>
+        </div>
+      </div>
+      <!-- DEBUG ARENA -->
+      <div id="arena" class="tab" style="display:none">
+        <h2><i class="fas fa-brain"></i> Debug Arena</h2>
+        <div class="glass-card">
+          <div id="challengesList"></div>
+        </div>
+        <h3>🏆 Leaderboard</h3>
+        <div class="glass-card" id="leaderboard"></div>
+      </div>
+      <!-- BLOG -->
+      <div id="blog" class="tab" style="display:none">
+        <div class="glass-card">
+          <h2><i class="fas fa-feather-alt"></i> Write a Blog</h2>
+          <form id="createPostForm">
+            <input type="text" id="postTitle" placeholder="Title" required>
+            <textarea id="postContent" rows="8" placeholder="Markdown content..."></textarea>
+            <select id="postCategory"><option>Tutorials</option><option>Bug Diaries</option><option>Developer Humor</option></select>
+            <input type="text" id="postTags" placeholder="Tags (comma)">
+            <button type="submit" class="btn-primary">Publish</button>
+          </form>
+        </div>
+      </div>
+      <!-- PROFILE -->
+      <div id="profile" class="tab" style="display:none">
+        <div class="glass-card">
+          <div style="text-align:center">
+            <img id="profileImg" class="profile-pic" src="/uploads/profiles/default.png">
+            <h3 id="username">@dev</h3>
+            <span id="verifiedBadge" style="display:none">✅ Verified</span>
+            <p>Level: <strong id="userLevel"></strong> | XP: <span id="userXp"></span></p>
+            <p>Bio: <span id="userBio"></span></p>
+            <p>Skills: <span id="userSkills"></span></p>
+          </div>
+          <hr>
+          <h4>Statistics</h4>
+          <p>📝 Posts: <span id="statPosts"></span> | 🐛 Bugs: <span id="statBugs"></span> | ❤️ Likes: <span id="statLikes"></span></p>
+          <hr>
+          <h4>Edit Profile</h4>
+          <input type="text" id="editUsername" placeholder="New Username">
+          <textarea id="editBio" placeholder="Bio"></textarea>
+          <input type="text" id="editSkills" placeholder="Skills">
+          <button id="updateProfileBtn" class="btn-primary">Update</button>
+          <hr>
+          <h4>Profile Picture</h4>
+          <input type="file" id="uploadProfilePic" accept="image/*">
+          <hr>
+          <h4>Change Password</h4>
+          <div class="input-group"><input type="password" id="currentPassword" placeholder="Current"><span class="password-toggle" onclick="togglePassword('currentPassword')">👁️</span></div>
+          <div class="input-group"><input type="password" id="newPassword" placeholder="New"><span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span></div>
+          <div class="input-group"><input type="password" id="confirmPassword" placeholder="Confirm"><span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span></div>
+          <button id="changePwdBtn" class="btn-primary">Change Password</button>
+          <div id="pwdMessage" style="display:none;"></div>
+          <hr>
+          <button id="deleteAccountBtn" class="btn-primary" style="background:#a11;">Delete Account</button>
+        </div>
+      </div>
+      <!-- SAVED -->
+      <div id="saved" class="tab" style="display:none">
+        <h2><i class="fas fa-archive"></i> Saved Posts</h2>
+        <div id="savedPostsList" class="feed-grid"></div>
+      </div>
+    </div>
+  </main>
 </div>
 
-<div class="container">
-  <!-- FEED TAB -->
-  <div id="feed" class="tab active">
-    <h2>📰 Activity Feed</h2>
-    <div id="postsFeed"></div>
-  </div>
-
-  <!-- MEME ZONE -->
-  <div id="memes" class="tab" style="display:none">
-    <h2>😂 Meme Zone</h2>
-    <div id="memesFeed"></div>
-    <hr>
-    <h3>Upload your meme</h3>
-    <form id="uploadMemeForm" enctype="multipart/form-data">
-      <input type="text" id="memeTitle" placeholder="Title" required>
-      <input type="file" id="memeFile" accept="image/*" required>
-      <button type="submit" class="btn">Upload Meme</button>
-    </form>
-  </div>
-
-  <!-- DEBUG ARENA -->
-  <div id="arena" class="tab" style="display:none">
-    <h2>🧩 Debug Arena</h2>
-    <div id="challengesList"></div>
-    <h3>🏆 Leaderboard</h3>
-    <div id="leaderboard"></div>
-  </div>
-
-  <!-- WRITE BLOG -->
-  <div id="blog" class="tab" style="display:none">
-    <h2>📝 Write a Blog Post</h2>
-    <form id="createPostForm">
-      <input type="text" id="postTitle" placeholder="Title" required>
-      <textarea id="postContent" rows="10" placeholder="Write in Markdown..."></textarea>
-      <select id="postCategory">
-        <option>Tutorials</option><option>Bug Diaries</option><option>Developer Humor</option>
-      </select>
-      <input type="text" id="postTags" placeholder="Tags (comma separated)">
-      <button type="submit" class="btn">Publish (needs approval)</button>
-    </form>
-  </div>
-
-  <!-- PROFILE TAB -->
-  <div id="profile" class="tab" style="display:none">
-    <h2>👤 Profile</h2>
-    <div class="glass-card">
-      <img id="profileImg" class="profile-pic" src="/uploads/profiles/default.png">
-      <h3 id="username">Loading...</h3>
-      <span id="verifiedBadge" style="display:none" class="verified-tick">✅ Verified</span>
-      <p>Level: <strong id="userLevel"></strong> | XP: <span id="userXp"></span></p>
-      <p>Bio: <span id="userBio"></span></p>
-      <p>Skills: <span id="userSkills"></span></p>
-      <hr>
-      <h4>Statistics</h4>
-      <p>📝 Posts: <span id="statPosts"></span> | 🐛 Bugs fixed: <span id="statBugs"></span> | ❤️ Likes received: <span id="statLikes"></span></p>
-      <hr>
-      <h4>Edit Profile</h4>
-      <input type="text" id="editUsername" placeholder="New Username">
-      <textarea id="editBio" placeholder="Bio"></textarea>
-      <input type="text" id="editSkills" placeholder="Skills (comma separated)">
-      <button id="updateProfileBtn" class="btn">Update Profile</button>
-      <hr>
-      <h4>Profile Picture</h4>
-      <input type="file" id="uploadProfilePic" accept="image/*">
-      <hr>
-      <h4>Change Password</h4>
-      <div class="input-group">
-        <input type="password" id="currentPassword" placeholder="Current Password">
-        <span class="password-toggle" onclick="togglePassword('currentPassword')">👁️</span>
-      </div>
-      <div class="input-group">
-        <input type="password" id="newPassword" placeholder="New Password">
-        <span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span>
-      </div>
-      <div class="input-group">
-        <input type="password" id="confirmPassword" placeholder="Confirm New Password">
-        <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
-      </div>
-      <button id="changePwdBtn" class="btn">Change Password</button>
-      <div id="pwdMessage" class="message" style="display:none;"></div>
-      <hr>
-      <button id="deleteAccountBtn" class="btn" style="background:#550000">Delete Account</button>
-    </div>
-  </div>
-
-  <!-- SAVED POSTS -->
-  <div id="saved" class="tab" style="display:none">
-    <h2>📚 Saved Posts</h2>
-    <div id="savedPostsList"></div>
-  </div>
-</div>
-
-<!-- Logout Countdown Modal -->
+<!-- Logout Modal -->
 <div id="logoutModal" class="modal">
   <div class="modal-content">
-    <h2 style="color:#ff004c">👋 Welcome Next Time!</h2>
+    <h2>👋 Goodbye, Dev</h2>
     <p>Logging out in</p>
     <div class="countdown-number" id="countdownNumber">3</div>
-    <p>See you soon, developer.</p>
+    <p>See you in the matrix</p>
   </div>
 </div>
 
 <script src="/js/common.js"></script>
 <script src="/js/user.js"></script>
 <script>
-  // Tab switching
-  document.querySelectorAll('.nav-link[data-tab]').forEach(link => {
-    link.addEventListener('click', (e) => {
+  // SIDEBAR TOGGLE (mobile)
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggleBtn');
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 880 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+  }
+
+  // TAB SWITCHING with sidebar items
+  const tabs = ['feed', 'memes', 'arena', 'blog', 'profile', 'saved'];
+  const sidebarItems = document.querySelectorAll('.sidebar-item[data-tab]');
+  const externalLinks = document.querySelectorAll('.sidebar-item[data-link]');
+  
+  function activateTab(tabId) {
+    tabs.forEach(t => {
+      const el = document.getElementById(t);
+      if (el) el.style.display = 'none';
+    });
+    const activeTabDiv = document.getElementById(tabId);
+    if (activeTabDiv) activeTabDiv.style.display = 'block';
+    // update active class
+    sidebarItems.forEach(item => {
+      if (item.dataset.tab === tabId) item.classList.add('active');
+      else item.classList.remove('active');
+    });
+    if (window.innerWidth <= 880) sidebar.classList.remove('open');
+  }
+
+  sidebarItems.forEach(item => {
+    item.addEventListener('click', (e) => {
       e.preventDefault();
-      const tabId = link.dataset.tab;
-      document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
-      document.getElementById(tabId).style.display = 'block';
+      const tabId = item.dataset.tab;
+      if (tabId) activateTab(tabId);
     });
   });
 
-  // Notification dropdown toggle
+  // external links navigation (preserve)
+  externalLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.dataset.link;
+      if (href) window.location.href = href;
+    });
+  });
+
+  // theme sync both top button and sidebar button
+  function setTheme(isLight) {
+    if (isLight) document.body.classList.add('light');
+    else document.body.classList.remove('light');
+    localStorage.setItem('devTheme', isLight ? 'light' : 'dark');
+    const themeTop = document.getElementById('themeToggleTop');
+    if (themeTop) themeTop.innerHTML = isLight ? '<i class="fas fa-sun"></i> Light' : '<i class="fas fa-moon"></i> Theme';
+  }
+  function initThemeUI() {
+    const stored = localStorage.getItem('devTheme');
+    const isLight = stored === 'light';
+    setTheme(isLight);
+    const themeTop = document.getElementById('themeToggleTop');
+    if (themeTop) {
+      themeTop.addEventListener('click', () => {
+        const newLight = !document.body.classList.contains('light');
+        setTheme(newLight);
+      });
+    }
+    const themeSide = document.getElementById('themeSideBtn');
+    if (themeSide) {
+      themeSide.addEventListener('click', () => {
+        const newLight = !document.body.classList.contains('light');
+        setTheme(newLight);
+      });
+    }
+  }
+  initThemeUI();
+
+  // LOGOUT (modal and redirect)
+  const logoutHandler = () => {
+    const modal = document.getElementById('logoutModal');
+    const countdownSpan = document.getElementById('countdownNumber');
+    let count = 3;
+    modal.style.display = 'flex';
+    countdownSpan.innerText = count;
+    const interval = setInterval(() => {
+      count--;
+      countdownSpan.innerText = count;
+      if (count <= 0) {
+        clearInterval(interval);
+        modal.style.display = 'none';
+        if (typeof logout === 'function') logout();
+        else window.location.href = '/login.html';
+      }
+    }, 1000);
+  };
+  document.getElementById('logoutSideBtn')?.addEventListener('click', logoutHandler);
+  // also support previous logout button if any, but we have sidebar
+
+  // NOTIFICATIONS
   const notifBell = document.getElementById('notifBell');
   const notifDropdown = document.getElementById('notifDropdown');
   if (notifBell) {
@@ -205,45 +561,94 @@
       e.stopPropagation();
       notifDropdown.classList.toggle('show');
       if (typeof loadNotifications === 'function') loadNotifications();
+      else {
+        const listDiv = document.getElementById('notifList');
+        if (listDiv && listDiv.innerHTML === '✨ Ready') {
+          listDiv.innerHTML = '<div class="notif-item unread">📢 Welcome to Sidebar Dashboard</div><div class="notif-item">⭐ New debug challenge added</div>';
+        }
+      }
     });
   }
-  document.addEventListener('click', function(e) {
-    const panel = document.querySelector('.notif-panel');
-    if (panel && !panel.contains(e.target) && notifDropdown) {
+  document.addEventListener('click', (e) => {
+    if (notifDropdown && !notifBell?.contains(e.target) && !notifDropdown.contains(e.target)) {
       notifDropdown.classList.remove('show');
     }
   });
 
-  // LOGOUT WITH COUNTDOWN MESSAGE
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const modal = document.getElementById('logoutModal');
-      const countdownSpan = document.getElementById('countdownNumber');
-      let count = 3;
-      modal.style.display = 'flex';
-      countdownSpan.innerText = count;
-      const interval = setInterval(() => {
-        count--;
-        countdownSpan.innerText = count;
-        if (count <= 0) {
-          clearInterval(interval);
-          modal.style.display = 'none';
-          logout(); // defined in common.js
-        }
-      }, 1000);
+  // password toggle global
+  window.togglePassword = function(fieldId) {
+    const f = document.getElementById(fieldId);
+    if (f) f.type = f.type === 'password' ? 'text' : 'password';
+  };
+
+  // change password alert validation
+  const changePwd = document.getElementById('changePwdBtn');
+  if (changePwd) {
+    changePwd.addEventListener('click', (e) => {
+      const newP = document.getElementById('newPassword')?.value;
+      const conf = document.getElementById('confirmPassword')?.value;
+      const msgDiv = document.getElementById('pwdMessage');
+      if (newP !== conf && msgDiv) {
+        e.preventDefault();
+        msgDiv.style.display = 'block';
+        msgDiv.innerHTML = '❌ Passwords do not match';
+        msgDiv.style.background = '#ff3b7c30';
+        msgDiv.style.padding = '8px';
+        msgDiv.style.borderRadius = '40px';
+        return;
+      }
+      if (msgDiv) msgDiv.style.display = 'none';
     });
   }
 
-  function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    if (field.type === 'password') field.type = 'text';
-    else field.type = 'password';
+  // profile pic preview
+  const picInput = document.getElementById('uploadProfilePic');
+  if (picInput) {
+    picInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && document.getElementById('profileImg')) {
+        const reader = new FileReader();
+        reader.onload = ev => { document.getElementById('profileImg').src = ev.target.result; };
+        reader.readAsDataURL(file);
+      }
+    });
   }
 
-  initTheme();
-  startNotificationPolling();
+  // OBSERVER for dynamic cards style
+  const styleObserver = new MutationObserver(() => {
+    document.querySelectorAll('#postsFeed > div, #memesFeed > div, .saved-item').forEach(el => {
+      if (!el.classList.contains('dyn-style')) {
+        el.classList.add('dyn-style');
+        el.style.background = 'rgba(20, 28, 50, 0.75)';
+        el.style.borderRadius = '24px';
+        el.style.padding = '1.2rem';
+        el.style.border = '1px solid rgba(0,240,255,0.2)';
+      }
+    });
+    document.querySelectorAll('#leaderboard div').forEach(el => {
+      if (!el.style.justifyContent) {
+        el.style.display = 'flex';
+        el.style.justifyContent = 'space-between';
+        el.style.padding = '0.6rem';
+      }
+    });
+  });
+  styleObserver.observe(document.body, { childList: true, subtree: true });
+
+  // ensure feed visible by default
+  if (!document.getElementById('feed').style.display || getComputedStyle(document.getElementById('feed')).display === 'none') {
+    activateTab('feed');
+  }
+
+  // Polling stub
+  if (typeof startNotificationPolling !== 'function') {
+    window.startNotificationPolling = function() {
+      setInterval(() => {
+        if (typeof loadNotifications === 'function') loadNotifications();
+      }, 30000);
+    };
+  }
+  setTimeout(() => { if (typeof startNotificationPolling === 'function') startNotificationPolling(); }, 1000);
 </script>
 </body>
 </html>

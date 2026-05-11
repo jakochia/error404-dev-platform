@@ -6,15 +6,15 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const cors = require('cors');
-const auth = require('./middleware/auth');
 const cron = require('node-cron');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const { OpenAI } = require('openai');
 const fetch = require('node-fetch');
+const auth = require('./middleware/auth');
 
 const app = express();
-const PORT = 4040;
+const PORT = process.env.PORT || 4040;
 const SECRET = '404_DEV_SECRET_GLITCH';
 
 // OpenAI (optional)
@@ -51,7 +51,6 @@ const initDB = () => {
   if (!fs.existsSync('./public/uploads/profiles')) fs.mkdirSync('./public/uploads/profiles', { recursive: true });
   if (!fs.existsSync('./public/uploads/memes')) fs.mkdirSync('./public/uploads/memes', { recursive: true });
 
-  // users
   let users = readDB('users');
   if (users.length === 0) {
     const adminPass = bcrypt.hashSync('ASHER01!?', 10);
@@ -79,7 +78,6 @@ const initDB = () => {
     writeDB('users', users);
   }
 
-  // other DBs
   const dbs = ['posts', 'memes', 'challenges', 'threads', 'comments', 'reports', 'logs', 'config', 'notifications', 'messages', 'follows', 'leaderboard_archive', 'groups'];
   dbs.forEach(db => { if (readDB(db).length === 0) writeDB(db, []); });
 
@@ -258,12 +256,11 @@ app.put('/api/user/profile', auth, (req, res) => {
 });
 
 app.post('/api/user/change-password', auth, async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
   let users = readDB('users');
   const user = users.find(u => u.id === req.userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  const isMatch = bcrypt.compareSync(currentPassword, user.password);
-  if (!isMatch) return res.status(401).json({ error: 'Current password is incorrect' });
+  const { currentPassword, newPassword } = req.body;
+  if (!bcrypt.compareSync(currentPassword, user.password)) return res.status(401).json({ error: 'Current password is incorrect' });
   user.password = bcrypt.hashSync(newPassword, 10);
   writeDB('users', users);
   addLog('change_password', req.userId, 'Password changed');
@@ -310,7 +307,7 @@ app.get('/api/user/export-data', auth, (req, res) => {
   res.json(exportData);
 });
 
-// ========== BLOG SYSTEM ==========
+// ========== BLOG ==========
 app.get('/api/posts', (req, res) => {
   let posts = readDB('posts');
   const users = readDB('users');
@@ -404,7 +401,7 @@ app.put('/api/admin/posts/:id/approve', auth, (req, res) => {
   res.json({ approved: true });
 });
 
-// ========== MEME ZONE ==========
+// ========== MEMES ==========
 app.post('/api/memes/upload', auth, uploadMeme.single('meme'), (req, res) => {
   const memes = readDB('memes');
   const newMeme = {
@@ -478,7 +475,7 @@ app.get('/api/leaderboard', (req, res) => {
   res.json(top);
 });
 
-// ========== COMMUNITY FORUM ==========
+// ========== FORUM ==========
 app.get('/api/threads', (req, res) => {
   const threads = readDB('threads');
   const users = readDB('users');
@@ -506,7 +503,7 @@ app.post('/api/threads/:id/comment', auth, (req, res) => {
   res.json(comment);
 });
 
-// ========== BUG REPORTS ==========
+// ========== REPORTS ==========
 app.post('/api/reports', auth, (req, res) => {
   const { targetType, targetId, reason } = req.body;
   const reports = readDB('reports');
@@ -546,7 +543,7 @@ app.put('/api/notifications/:id/read', auth, (req, res) => {
   res.json({ success: true });
 });
 
-// ========== PRIVATE MESSAGING & GROUPS ==========
+// ========== MESSAGES & GROUPS ==========
 app.get('/api/conversations', auth, (req, res) => {
   const messages = readDB('messages');
   const users = readDB('users');
@@ -625,7 +622,7 @@ app.get('/api/groups/:groupId/messages', auth, (req, res) => {
   res.json(group.messages || []);
 });
 
-// ========== FOLLOW SYSTEM ==========
+// ========== FOLLOWS ==========
 app.post('/api/follow/:userId', auth, (req, res) => {
   let follows = readDB('follows');
   const existing = follows.find(f => f.followerId === req.userId && f.followingId === req.params.userId);
@@ -645,10 +642,10 @@ app.get('/api/followers/:userId', auth, (req, res) => {
   res.json({ followers: followerNames, following: followingNames });
 });
 
-// ========== IMPROVED CODE EXECUTION ==========
+// ========== CODE EXECUTION ==========
 app.post('/api/execute', auth, async (req, res) => {
   const { language, code, stdin } = req.body;
-  const langMap = { javascript: 'js', python: 'py', html: 'html' };
+  const langMap = { javascript: 'js', python: 'py' };
   const targetLang = langMap[language] || language;
   try {
     const response = await fetch('https://emkc.org/api/v2/piston/execute', {
@@ -663,10 +660,10 @@ app.post('/api/execute', auth, async (req, res) => {
   }
 });
 
-// ========== AI DEBUGGING ==========
+// ========== AI DEBUG ==========
 app.post('/api/ai-debug', auth, async (req, res) => {
-  const { code, error } = req.body;
   if (!openai) return res.status(501).json({ error: 'OpenAI API not configured' });
+  const { code, error } = req.body;
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
@@ -692,7 +689,7 @@ app.get('/api/leaderboard/archive', (req, res) => {
   res.json(readDB('leaderboard_archive'));
 });
 
-// ========== ADMIN PANEL ==========
+// ========== ADMIN ==========
 app.get('/api/admin/stats', auth, (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const users = readDB('users');
