@@ -20,16 +20,15 @@ const app = express();
 const PORT = process.env.PORT || 4040;
 const SECRET = process.env.JWT_SECRET || '404_DEV_SECRET_GLITCH';
 
-// ========== MONGODB CONNECTION ==========
+// MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-  console.error('❌ MONGODB_URI environment variable is required');
+  console.error('❌ MONGODB_URI environment variable required');
   process.exit(1);
 }
-
 mongoose.connect(MONGODB_URI);
 mongoose.connection.on('connected', () => console.log('✅ MongoDB connected'));
-mongoose.connection.on('error', (err) => console.error('MongoDB error:', err));
+mongoose.connection.on('error', err => console.error('MongoDB error:', err));
 
 // ========== SCHEMAS ==========
 const userSchema = new mongoose.Schema({
@@ -43,6 +42,7 @@ const userSchema = new mongoose.Schema({
   verifiedTick: { type: Boolean, default: false },
   bio: String,
   skills: [String],
+  gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' }, // optional
   xp: { type: Number, default: 0 },
   level: { type: String, default: 'Beginner Debugger' },
   postsCreated: { type: Number, default: 0 },
@@ -162,6 +162,7 @@ const groupSchema = new mongoose.Schema({
   id: { type: String, default: uuidv4, unique: true },
   name: String,
   creatorId: String,
+  genderType: { type: String, enum: ['boys', 'girls', 'mixed', 'all'], default: 'mixed' },
   members: [String],
   messages: [{
     id: { type: String, default: uuidv4 },
@@ -172,7 +173,18 @@ const groupSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// Models
+// Feedback schema
+const feedbackSchema = new mongoose.Schema({
+  id: { type: String, default: uuidv4, unique: true },
+  userId: String,
+  username: String,
+  message: String,
+  rating: { type: Number, min: 1, max: 5, default: 0 },
+  status: { type: String, default: 'pending' },
+  adminReply: String,
+  createdAt: { type: Date, default: Date.now },
+});
+
 const User = mongoose.model('User', userSchema);
 const Post = mongoose.model('Post', postSchema);
 const Meme = mongoose.model('Meme', memeSchema);
@@ -186,52 +198,46 @@ const Message = mongoose.model('Message', messageSchema);
 const Follow = mongoose.model('Follow', followSchema);
 const LeaderboardArchive = mongoose.model('LeaderboardArchive', leaderboardArchiveSchema);
 const Group = mongoose.model('Group', groupSchema);
+const Feedback = mongoose.model('Feedback', feedbackSchema);
 
-// ========== INITIALIZE DEFAULT DATA ==========
+// ========== INIT DEFAULT DATA ==========
 async function initDefaultData() {
-  try {
-    const adminExists = await User.findOne({ role: 'admin' });
-    if (!adminExists) {
-      const adminPass = bcrypt.hashSync('ASHER01!?', 10);
-      await User.create({
-        username: 'error.404.ke',
-        email: 'admin@error404.dev',
-        password: adminPass,
-        role: 'admin',
-        bio: 'System Administrator',
-        skills: ['JavaScript', 'Node.js', 'Cyber'],
-        xp: 5000,
-        level: '404 Master',
-        emailVerified: true,
-      });
-      console.log('Admin user created');
-    }
-    const config = await Config.findOne();
-    if (!config) await Config.create({});
-    const challenges = await Challenge.countDocuments();
-    if (challenges === 0) {
-      await Challenge.insertMany([
-        { id: 'ch1', title: 'Fix the sum function', brokenCode: 'function sum(a,b){ return a - b; }', solution: 'return a + b', difficulty: 'easy', xpReward: 50 },
-        { id: 'ch2', title: 'Array double', brokenCode: 'const double = arr => arr.map(x => x * 3);', solution: 'arr.map(x => x * 2)', difficulty: 'easy', xpReward: 75 },
-        { id: 'ch3', title: 'Palindrome check', brokenCode: 'function isPal(str){ return str === str.split("").reverse().join(""); }', solution: 'return str === str.split("").reverse().join("")', difficulty: 'medium', xpReward: 120 },
-      ]);
-      console.log('Default challenges created');
-    }
-  } catch (err) {
-    console.error('Error initializing default data:', err);
+  const adminExists = await User.findOne({ role: 'admin' });
+  if (!adminExists) {
+    const adminPass = bcrypt.hashSync('ASHER01!?', 10);
+    await User.create({
+      username: 'error.404.ke',
+      email: 'admin@error404.dev',
+      password: adminPass,
+      role: 'admin',
+      bio: 'System Administrator',
+      skills: ['JavaScript', 'Node.js', 'Cyber'],
+      xp: 5000,
+      level: '404 Master',
+    });
+    console.log('Admin user created');
+  }
+  const config = await Config.findOne();
+  if (!config) await Config.create({});
+  const challenges = await Challenge.countDocuments();
+  if (challenges === 0) {
+    await Challenge.insertMany([
+      { id: 'ch1', title: 'Fix the sum function', brokenCode: 'function sum(a,b){ return a - b; }', solution: 'return a + b', difficulty: 'easy', xpReward: 50 },
+      { id: 'ch2', title: 'Array double', brokenCode: 'const double = arr => arr.map(x => x * 3);', solution: 'arr.map(x => x * 2)', difficulty: 'easy', xpReward: 75 },
+      { id: 'ch3', title: 'Palindrome check', brokenCode: 'function isPal(str){ return str === str.split("").reverse().join(""); }', solution: 'return str === str.split("").reverse().join("")', difficulty: 'medium', xpReward: 120 },
+    ]);
+    console.log('Default challenges created');
   }
 }
 
-// Helper: add log
+// Helper log
 async function addLog(action, userId, details) {
   try {
     await Log.create({ action, userId, details });
-  } catch (err) {
-    console.error('Log error:', err);
-  }
+  } catch (err) { console.error('Log error:', err); }
 }
 
-// ========== MULTER (uploads) ==========
+// ========== UPLOADS ==========
 const profileStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'public/uploads/profiles/'),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
@@ -243,7 +249,6 @@ const memeStorage = multer.diskStorage({
 const uploadProfile = multer({ storage: profileStorage });
 const uploadMeme = multer({ storage: memeStorage });
 
-// Ensure upload directories exist
 fs.ensureDirSync('./public/uploads/profiles');
 fs.ensureDirSync('./public/uploads/memes');
 
@@ -252,7 +257,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// ========== ONLINE USERS (in-memory) ==========
+// ========== ONLINE USERS ==========
 const onlineUsers = new Set();
 app.post('/api/online', auth, (req, res) => { onlineUsers.add(req.userId); res.json({ online: Array.from(onlineUsers) }); });
 app.post('/api/offline', auth, (req, res) => { onlineUsers.delete(req.userId); res.json({ success: true }); });
@@ -350,10 +355,11 @@ app.get('/api/user/profile', auth, async (req, res) => {
 app.put('/api/user/profile', auth, async (req, res) => {
   const user = await User.findOne({ id: req.userId });
   if (user) {
-    const { username, bio, skills } = req.body;
+    const { username, bio, skills, gender } = req.body;
     if (username) user.username = username;
     if (bio) user.bio = bio;
     if (skills) user.skills = skills.split(',').map(s => s.trim());
+    if (gender) user.gender = gender;
     await user.save();
     res.json({ success: true });
   } else res.status(404);
@@ -452,8 +458,7 @@ app.delete('/api/posts/:id', auth, async (req, res) => {
 app.post('/api/posts/:id/like', auth, async (req, res) => {
   const post = await Post.findOne({ id: req.params.id });
   if (!post) return res.status(404);
-  const liked = post.likes.includes(req.userId);
-  if (liked) post.likes = post.likes.filter(id => id !== req.userId);
+  if (post.likes.includes(req.userId)) post.likes = post.likes.filter(id => id !== req.userId);
   else post.likes.push(req.userId);
   await post.save();
   res.json({ likes: post.likes.length });
@@ -462,11 +467,10 @@ app.post('/api/posts/:id/like', auth, async (req, res) => {
 app.post('/api/posts/:id/save', auth, async (req, res) => {
   const post = await Post.findOne({ id: req.params.id });
   if (!post) return res.status(404);
-  const saved = post.savedBy.includes(req.userId);
-  if (saved) post.savedBy = post.savedBy.filter(id => id !== req.userId);
+  if (post.savedBy.includes(req.userId)) post.savedBy = post.savedBy.filter(id => id !== req.userId);
   else post.savedBy.push(req.userId);
   await post.save();
-  res.json({ saved: !saved });
+  res.json({ saved: !post.savedBy.includes(req.userId) });
 });
 
 app.get('/api/user/saved-posts', auth, async (req, res) => {
@@ -503,8 +507,7 @@ app.get('/api/memes', async (req, res) => {
 app.post('/api/memes/:id/like', auth, async (req, res) => {
   const meme = await Meme.findOne({ id: req.params.id });
   if (!meme) return res.status(404);
-  const liked = meme.likes.includes(req.userId);
-  if (liked) meme.likes = meme.likes.filter(id => id !== req.userId);
+  if (meme.likes.includes(req.userId)) meme.likes = meme.likes.filter(id => id !== req.userId);
   else meme.likes.push(req.userId);
   await meme.save();
   res.json({ likes: meme.likes.length });
@@ -609,6 +612,7 @@ app.get('/api/conversations', auth, async (req, res) => {
   });
   res.json(result);
 });
+
 app.get('/api/messages/:userId', auth, async (req, res) => {
   const messages = await Message.find({
     $or: [
@@ -618,6 +622,7 @@ app.get('/api/messages/:userId', auth, async (req, res) => {
   }).sort({ createdAt: 1 });
   res.json(messages);
 });
+
 app.post('/api/messages', auth, async (req, res) => {
   const { to, text } = req.body;
   const newMsg = await Message.create({ from: req.userId, to, text });
@@ -625,27 +630,92 @@ app.post('/api/messages', auth, async (req, res) => {
   res.json(newMsg);
 });
 
-// Groups
+// Groups (user gets groups they are member of)
 app.get('/api/groups', auth, async (req, res) => {
   const groups = await Group.find({ members: req.userId });
   res.json(groups);
 });
-app.post('/api/groups', auth, async (req, res) => {
-  const { name, members } = req.body;
-  const group = await Group.create({ name, creatorId: req.userId, members: [req.userId, ...(members || [])] });
+
+// Admin creates a group (with genderType)
+app.post('/api/admin/groups', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const { name, genderType, members } = req.body;
+  const newGroup = await Group.create({
+    name,
+    creatorId: req.userId,
+    genderType: genderType || 'mixed',
+    members: [req.userId, ...(members || [])],
+  });
+  res.json(newGroup);
+});
+
+// Admin gets all groups
+app.get('/api/admin/groups', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const groups = await Group.find();
+  res.json(groups);
+});
+
+// Admin adds members to a group
+app.put('/api/admin/groups/:groupId/add-members', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const { memberIds } = req.body;
+  const group = await Group.findOne({ id: req.params.groupId });
+  if (!group) return res.status(404);
+  group.members.push(...memberIds.filter(id => !group.members.includes(id)));
+  await group.save();
   res.json(group);
 });
+
+// Group messaging (unchanged)
 app.post('/api/groups/:groupId/message', auth, async (req, res) => {
   const group = await Group.findOne({ id: req.params.groupId });
   if (!group) return res.status(404);
+  if (!group.members.includes(req.userId)) return res.status(403);
   group.messages.push({ from: req.userId, text: req.body.text });
   await group.save();
   res.json(group.messages[group.messages.length - 1]);
 });
+
 app.get('/api/groups/:groupId/messages', auth, async (req, res) => {
   const group = await Group.findOne({ id: req.params.groupId });
   if (!group) return res.status(404);
+  if (!group.members.includes(req.userId)) return res.status(403);
   res.json(group.messages || []);
+});
+
+// ========== FEEDBACK SYSTEM ==========
+// User submits feedback
+app.post('/api/feedback', auth, async (req, res) => {
+  const { message, rating } = req.body;
+  const user = await User.findOne({ id: req.userId });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const feedback = await Feedback.create({
+    userId: req.userId,
+    username: user.username,
+    message,
+    rating: rating || 0,
+  });
+  res.json(feedback);
+});
+
+// Admin gets all feedback
+app.get('/api/admin/feedback', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const feedbacks = await Feedback.find().sort({ createdAt: -1 });
+  res.json(feedbacks);
+});
+
+// Admin replies to feedback
+app.put('/api/admin/feedback/:id/reply', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const { reply } = req.body;
+  const feedback = await Feedback.findOne({ id: req.params.id });
+  if (!feedback) return res.status(404);
+  feedback.adminReply = reply;
+  feedback.status = 'reviewed';
+  await feedback.save();
+  res.json({ success: true });
 });
 
 // ========== FOLLOWS ==========
@@ -655,6 +725,7 @@ app.post('/api/follow/:userId', auth, async (req, res) => {
   else await Follow.create({ followerId: req.userId, followingId: req.params.userId });
   res.json({ following: !existing });
 });
+
 app.get('/api/followers/:userId', auth, async (req, res) => {
   const followers = await Follow.find({ followingId: req.params.userId }).select('followerId');
   const following = await Follow.find({ followerId: req.params.userId }).select('followingId');
@@ -707,12 +778,13 @@ cron.schedule('0 0 * * 0', async () => {
   }
   console.log('Weekly leaderboard archived.');
 });
+
 app.get('/api/leaderboard/archive', async (req, res) => {
   const archive = await LeaderboardArchive.find().sort({ date: -1 }).limit(100);
   res.json(archive);
 });
 
-// ========== ADMIN ==========
+// ========== ADMIN PANEL ==========
 app.get('/api/admin/stats', auth, async (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const totalUsers = await User.countDocuments();
@@ -831,7 +903,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-// Wait for MongoDB connection before starting server
+// Start server after MongoDB connection
 mongoose.connection.once('open', async () => {
   await initDefaultData();
   app.listen(PORT, () => console.log(`🚀 ERROR 404 Platform running on http://localhost:${PORT}`));
