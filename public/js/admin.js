@@ -8,11 +8,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadAllMemes();
     await loadAllComments();
     await loadReports();
+    await loadFeedback();
+    await loadGroups();
+    await loadAnnouncements();
     await loadSystemLogs();
     await loadAnalytics();
     await loadFeatureToggles();
 
-    // Sidebar navigation
     document.querySelectorAll('.sidebar-nav a[data-section]').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -24,18 +26,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // Logout with countdown
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showLogoutCountdown();
-      });
-    }
-
-    document.getElementById('addUserForm').addEventListener('submit', addUser);
-    document.getElementById('saveFeaturesBtn').addEventListener('click', saveFeatures);
+    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLogoutCountdown();
+    });
+    document.getElementById('addUserForm')?.addEventListener('submit', addUser);
+    document.getElementById('saveFeaturesBtn')?.addEventListener('click', saveFeatures);
     document.getElementById('searchUser')?.addEventListener('input', filterUsers);
+    document.getElementById('createGroupBtn')?.addEventListener('click', createGroup);
+    document.getElementById('createAnnouncementBtn')?.addEventListener('click', createAnnouncement);
   } catch (err) {
     console.error('Init error:', err);
     showToast('Failed to load admin panel', true);
@@ -79,7 +78,6 @@ async function loadUsers() {
   allUsers = await res.json();
   renderUsers(allUsers);
 }
-
 function renderUsers(users) {
   const tbody = document.querySelector('#usersTable tbody');
   tbody.innerHTML = '';
@@ -97,32 +95,27 @@ function renderUsers(users) {
   document.querySelectorAll('.role-select').forEach(sel => sel.addEventListener('change', () => changeRole(sel.dataset.id, sel.value)));
   document.querySelectorAll('.delete-user').forEach(btn => btn.addEventListener('click', () => deleteUser(btn.dataset.id)));
 }
-
 function filterUsers() {
   const term = document.getElementById('searchUser').value.toLowerCase();
   const filtered = allUsers.filter(u => u.username.toLowerCase().includes(term) || u.email.toLowerCase().includes(term));
   renderUsers(filtered);
 }
-
 async function toggleBan(userId) {
   const res = await fetchAuth(`/admin/users/${userId}/ban`, { method: 'PUT' });
   if (res.ok) { showToast('User status updated'); loadUsers(); }
   else showToast('Failed', true);
 }
-
 async function changeRole(userId, role) {
   const res = await fetchAuth(`/admin/users/${userId}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
   if (res.ok) showToast('Role updated');
   else showToast('Failed', true);
 }
-
 async function deleteUser(userId) {
   if (!confirm('Permanently delete this user and all their content?')) return;
   const res = await fetchAuth(`/admin/users/${userId}`, { method: 'DELETE' });
   if (res.ok) { showToast('User deleted'); loadUsers(); }
   else showToast('Delete failed', true);
 }
-
 async function addUser(e) {
   e.preventDefault();
   const username = document.getElementById('newUsername').value;
@@ -134,7 +127,7 @@ async function addUser(e) {
   else alert('Error');
 }
 
-// ========== POSTS & BLOGS ==========
+// ========== POSTS ==========
 async function loadAllPosts() {
   const res = await fetchAuth('/posts/all');
   if (!res.ok) throw new Error('Load posts failed');
@@ -156,12 +149,10 @@ async function loadAllPosts() {
   document.querySelectorAll('.approve-post').forEach(btn => btn.addEventListener('click', () => approvePost(btn.dataset.id)));
   document.querySelectorAll('.delete-post').forEach(btn => btn.addEventListener('click', () => deletePost(btn.dataset.id)));
 }
-
 async function approvePost(postId) {
   const res = await fetchAuth(`/admin/posts/${postId}/approve`, { method: 'PUT' });
   if (res.ok) { showToast('Post approved'); loadAllPosts(); }
 }
-
 async function deletePost(postId) {
   if (!confirm('Delete this post?')) return;
   const res = await fetchAuth(`/posts/${postId}`, { method: 'DELETE' });
@@ -187,7 +178,6 @@ async function loadAllMemes() {
   });
   document.querySelectorAll('.delete-meme').forEach(btn => btn.addEventListener('click', () => deleteMeme(btn.dataset.id)));
 }
-
 async function deleteMeme(memeId) {
   if (!confirm('Delete this meme?')) return;
   const res = await fetchAuth(`/admin/memes/${memeId}`, { method: 'DELETE' });
@@ -213,14 +203,13 @@ async function loadAllComments() {
   });
   document.querySelectorAll('.delete-comment').forEach(btn => btn.addEventListener('click', () => deleteComment(btn.dataset.id)));
 }
-
 async function deleteComment(commentId) {
   if (!confirm('Delete this comment?')) return;
   const res = await fetchAuth(`/admin/comments/${commentId}`, { method: 'DELETE' });
   if (res.ok) { showToast('Comment deleted'); loadAllComments(); }
 }
 
-// ========== BUG REPORTS ==========
+// ========== REPORTS ==========
 async function loadReports() {
   const res = await fetchAuth('/reports');
   if (!res.ok) throw new Error('Load reports failed');
@@ -234,16 +223,165 @@ async function loadReports() {
       <h4>${escapeHtml(report.title)}</h4>
       <p>From: ${report.authorName} | Status: ${report.status}</p>
       <p>${escapeHtml(report.description)}</p>
-      ${report.status === 'open' || report.status === 'pending' ? `<button class="btn-small resolve-report" data-id="${report.id}">Mark Resolved</button>` : ''}
+      ${report.status === 'pending' ? `<button class="btn-small resolve-report" data-id="${report.id}">Mark Resolved</button>` : ''}
     `;
     container.appendChild(div);
   });
   document.querySelectorAll('.resolve-report').forEach(btn => btn.addEventListener('click', () => resolveReport(btn.dataset.id)));
 }
-
 async function resolveReport(reportId) {
   const res = await fetchAuth(`/admin/reports/${reportId}/resolve`, { method: 'PUT' });
   if (res.ok) { showToast('Report resolved'); loadReports(); }
+}
+
+// ========== FEEDBACK ==========
+async function loadFeedback() {
+  const res = await fetchAuth('/admin/feedback');
+  if (!res.ok) throw new Error('Load feedback failed');
+  const feedbacks = await res.json();
+  const container = document.getElementById('feedbackList');
+  container.innerHTML = '';
+  feedbacks.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <p><strong>${escapeHtml(f.username)}</strong> (Rating: ${f.rating}/5)</p>
+      <p>${escapeHtml(f.message)}</p>
+      ${f.adminReply ? `<p><em>Admin reply: ${escapeHtml(f.adminReply)}</em></p>` : `
+        <textarea id="reply-${f.id}" placeholder="Write your reply..."></textarea>
+        <button class="btn-small reply-feedback" data-id="${f.id}">Send Reply</button>
+      `}
+      <small>Status: ${f.status}</small>
+    `;
+    container.appendChild(div);
+  });
+  document.querySelectorAll('.reply-feedback').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const reply = document.getElementById(`reply-${id}`).value;
+      if (!reply.trim()) return alert('Please enter a reply');
+      const res = await fetchAuth(`/admin/feedback/${id}/reply`, { method: 'PUT', body: JSON.stringify({ reply }) });
+      if (res.ok) {
+        showToast('Reply sent');
+        loadFeedback();
+      } else showToast('Failed', true);
+    });
+  });
+}
+
+// ========== GROUPS ==========
+async function createGroup() {
+  const name = document.getElementById('groupName').value.trim();
+  const genderType = document.getElementById('groupGenderType').value;
+  if (!name) {
+    document.getElementById('groupCreateMsg').innerHTML = '<span style="color:#ff004c">Group name required</span>';
+    return;
+  }
+  const res = await fetchAuth('/admin/groups', {
+    method: 'POST',
+    body: JSON.stringify({ name, genderType })
+  });
+  if (res.ok) {
+    document.getElementById('groupCreateMsg').innerHTML = '<span style="color:#00f0ff">Group created successfully!</span>';
+    document.getElementById('groupName').value = '';
+    loadGroups();
+    setTimeout(() => document.getElementById('groupCreateMsg').innerHTML = '', 3000);
+  } else {
+    document.getElementById('groupCreateMsg').innerHTML = '<span style="color:#ff004c">Failed to create group</span>';
+  }
+}
+
+async function loadGroups() {
+  const res = await fetchAuth('/admin/groups');
+  if (!res.ok) throw new Error('Load groups failed');
+  const groups = await res.json();
+  const container = document.getElementById('groupsList');
+  if (!container) return;
+  container.innerHTML = '';
+  const usersRes = await fetchAuth('/admin/users');
+  const allUsers = await usersRes.json();
+  for (const group of groups) {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <strong>${escapeHtml(group.name)}</strong> (${group.genderType})<br>
+      <strong>Members (${group.members.length}):</strong> 
+      <span id="members-list-${group.id}">${group.members.map(m => allUsers.find(u => u.id === m)?.username || m).join(', ') || 'None'}</span><br>
+      <select id="member-select-${group.id}" style="width:auto; margin-top:8px;">
+        <option value="">-- Add member --</option>
+        ${allUsers.filter(u => !group.members.includes(u.id) && u.role !== 'admin').map(u => `<option value="${u.id}">${escapeHtml(u.username)}</option>`).join('')}
+      </select>
+      <button class="btn-small add-member-btn" data-group="${group.id}">Add Member</button>
+      <hr>
+      <small>Created: ${new Date(group.createdAt).toLocaleDateString()}</small>
+    `;
+    container.appendChild(div);
+  }
+  document.querySelectorAll('.add-member-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const groupId = btn.dataset.group;
+      const select = document.getElementById(`member-select-${groupId}`);
+      const memberId = select.value;
+      if (!memberId) return;
+      const res = await fetchAuth(`/admin/groups/${groupId}/add-members`, {
+        method: 'POST',
+        body: JSON.stringify({ memberIds: [memberId] })
+      });
+      if (res.ok) {
+        showToast('Member added');
+        loadGroups();
+      } else showToast('Failed', true);
+    });
+  });
+}
+
+// ========== ANNOUNCEMENTS ==========
+async function loadAnnouncements() {
+  const res = await fetchAuth('/announcements');
+  if (!res.ok) throw new Error('Load announcements failed');
+  const announcements = await res.json();
+  const container = document.getElementById('announcementsList');
+  if (!container) return;
+  container.innerHTML = '';
+  announcements.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <h3>${escapeHtml(a.title)}</h3>
+      <p>${escapeHtml(a.content)}</p>
+      <small>Priority: ${a.priority} | ${new Date(a.createdAt).toLocaleString()}</small>
+      <button class="btn-small delete-announcement" data-id="${a.id}">Delete</button>
+    `;
+    container.appendChild(div);
+  });
+  document.querySelectorAll('.delete-announcement').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (confirm('Delete this announcement?')) {
+        await fetchAuth(`/admin/announcements/${btn.dataset.id}`, { method: 'DELETE' });
+        loadAnnouncements();
+      }
+    });
+  });
+}
+
+async function createAnnouncement() {
+  const title = document.getElementById('announcementTitle').value.trim();
+  const content = document.getElementById('announcementContent').value.trim();
+  const priority = document.getElementById('announcementPriority').value;
+  if (!title || !content) {
+    alert('Title and content required');
+    return;
+  }
+  const res = await fetchAuth('/admin/announcements', {
+    method: 'POST',
+    body: JSON.stringify({ title, content, priority })
+  });
+  if (res.ok) {
+    showToast('Announcement posted');
+    document.getElementById('announcementTitle').value = '';
+    document.getElementById('announcementContent').value = '';
+    loadAnnouncements();
+  } else showToast('Failed', true);
 }
 
 // ========== LOGS ==========
@@ -281,7 +419,6 @@ async function loadFeatureToggles() {
   document.getElementById('toggleMemesFeature').checked = config.memesEnabled;
   document.getElementById('toggleChallengesFeature').checked = config.challengesEnabled;
 }
-
 async function saveFeatures() {
   const payload = {
     blogEnabled: document.getElementById('toggleBlogFeature').checked,
@@ -306,13 +443,12 @@ function showLogoutCountdown() {
     if (count <= 0) {
       clearInterval(interval);
       modal.style.display = 'none';
-      logout();  // from common.js
+      logout();
     }
   }, 1000);
 }
 
-// ========== UTILITIES ==========
-function escapeHtml(str) { return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 function showToast(msg, isErr = false) {
   const toast = document.createElement('div');
   toast.innerText = msg;

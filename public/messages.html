@@ -16,8 +16,7 @@
   <h1>💬 Messages & Groups</h1>
   <div class="chat-layout">
     <div class="sidebar-chat glass-card">
-      <h3>👥 Groups</h3>
-      <button id="createGroupBtn" class="btn-small">+ Create Group</button>
+      <h3>👥 Your Groups</h3>
       <div id="groupsList"></div>
       <hr>
       <h3>🟢 Online Users</h3>
@@ -34,24 +33,22 @@
     </div>
   </div>
 </div>
-<!-- Group creation modal -->
-<div id="groupModal" style="display:none; position:fixed; top:20%; left:30%; background:#0b0f1a; border:2px solid #ff004c; padding:20px; width:40%; z-index:1000;">
-  <h3>Create New Group</h3>
-  <input type="text" id="groupName" placeholder="Group Name" style="width:100%"><br>
-  <p>Select members (click to add):</p>
-  <div id="memberSelector" style="max-height:200px; overflow-y:auto;"></div>
-  <button id="createGroupSubmit" class="btn">Create</button>
-  <button id="closeGroupModal" class="btn" style="background:#333">Cancel</button>
-</div>
 <script src="/js/common.js"></script>
 <script>
 let currentChatType = null; // 'user' or 'group'
 let currentChatId = null;
-let onlineUsers = [];
+let currentChatName = null;
+
+async function loadGroups() {
+  const res = await fetchAuth('/groups');
+  const groups = await res.json();
+  const div = document.getElementById('groupsList');
+  div.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${g.name}')">👥 ${g.name}</div>`).join('');
+}
 
 async function loadOnlineUsers() {
   const res = await fetchAuth('/online-users');
-  onlineUsers = await res.json();
+  const onlineUsers = await res.json();
   const container = document.getElementById('onlineUsersList');
   container.innerHTML = onlineUsers.map(u => `<div class="user-item" onclick="startDM('${u.id}', '${u.username}')">${u.username}<span class="online-dot"></span></div>`).join('');
 }
@@ -63,26 +60,21 @@ async function loadConversations() {
   div.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${c.otherName}')"><strong>${c.otherName}</strong><br><small>${c.lastMsg}</small></div>`).join('');
 }
 
-async function loadGroups() {
-  const res = await fetchAuth('/groups');
-  const groups = await res.json();
-  const div = document.getElementById('groupsList');
-  div.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${g.name}')">👥 ${g.name}</div>`).join('');
-}
-
 window.startDM = async function(otherId, name) {
   currentChatType = 'user';
   currentChatId = otherId;
+  currentChatName = name;
   document.getElementById('chatHeader').innerText = `Chat with ${name}`;
   const res = await fetchAuth(`/messages/${otherId}`);
   const msgs = await res.json();
   const container = document.getElementById('chatMessages');
-  container.innerHTML = msgs.map(m => `<div style="text-align:${m.from === localStorage.getItem('userId') ? 'right' : 'left'}; margin:8px;"><b>${m.from === localStorage.getItem('userId') ? 'You' : name}:</b> ${m.text}</div>`).join('');
+  container.innerHTML = msgs.map(m => `<div style="text-align:${m.from === localStorage.getItem('userId') ? 'right' : 'left'}; margin:8px;"><b>${m.from === localStorage.getItem('userId') ? 'You' : name}:</b> ${escapeHtml(m.text)}</div>`).join('');
 };
 
 window.openGroup = async function(groupId, name) {
   currentChatType = 'group';
   currentChatId = groupId;
+  currentChatName = name;
   document.getElementById('chatHeader').innerText = `Group: ${name}`;
   const res = await fetchAuth(`/groups/${groupId}/messages`);
   const msgs = await res.json();
@@ -90,54 +82,36 @@ window.openGroup = async function(groupId, name) {
   const users = await (await fetchAuth('/admin/users')).json();
   container.innerHTML = msgs.map(m => {
     const userName = users.find(u => u.id === m.from)?.username || m.from;
-    return `<div><b>${userName}:</b> ${m.text}</div>`;
+    return `<div><b>${escapeHtml(userName)}:</b> ${escapeHtml(m.text)}</div>`;
   }).join('');
 };
 
 document.getElementById('sendMsg').onclick = async () => {
-  const text = document.getElementById('msgInput').value;
+  const text = document.getElementById('msgInput').value.trim();
   if (!text || !currentChatId) return;
   if (currentChatType === 'user') {
     await fetchAuth('/messages', { method:'POST', body: JSON.stringify({ to: currentChatId, text }) });
+    startDM(currentChatId, currentChatName);
   } else if (currentChatType === 'group') {
     await fetchAuth(`/groups/${currentChatId}/message`, { method:'POST', body: JSON.stringify({ text }) });
+    openGroup(currentChatId, currentChatName);
   }
   document.getElementById('msgInput').value = '';
-  if (currentChatType === 'user') startDM(currentChatId, document.getElementById('chatHeader').innerText.replace('Chat with ',''));
-  else openGroup(currentChatId, document.getElementById('chatHeader').innerText.replace('Group: ',''));
 };
 
-// Group creation
-document.getElementById('createGroupBtn').onclick = async () => {
-  const usersRes = await fetchAuth('/admin/users');
-  const allUsers = await usersRes.json();
-  const container = document.getElementById('memberSelector');
-  container.innerHTML = allUsers.map(u => `<label><input type="checkbox" value="${u.id}"> ${u.username}</label><br>`).join('');
-  document.getElementById('groupModal').style.display = 'block';
-};
-document.getElementById('createGroupSubmit').onclick = async () => {
-  const name = document.getElementById('groupName').value;
-  const checkboxes = document.querySelectorAll('#memberSelector input:checked');
-  const members = Array.from(checkboxes).map(cb => cb.value);
-  await fetchAuth('/groups', { method: 'POST', body: JSON.stringify({ name, members }) });
-  document.getElementById('groupModal').style.display = 'none';
-  loadGroups();
-};
-document.getElementById('closeGroupModal').onclick = () => document.getElementById('groupModal').style.display = 'none';
-
-// Online status: send heartbeat every 30 sec
-async function updateOnlineStatus() {
-  await fetchAuth('/online', { method: 'POST' });
-}
+// Online status heartbeat
+async function updateOnlineStatus() { await fetchAuth('/online', { method: 'POST' }); }
 updateOnlineStatus();
 setInterval(updateOnlineStatus, 30000);
 window.addEventListener('beforeunload', () => {
   fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
 });
 
+function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+loadGroups();
 loadOnlineUsers();
 loadConversations();
-loadGroups();
 document.getElementById('logoutBtn').onclick = () => {
   fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
   logout();

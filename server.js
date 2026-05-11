@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
   verifiedTick: { type: Boolean, default: false },
   bio: String,
   skills: [String],
-  gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' }, // optional
+  gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' },
   xp: { type: Number, default: 0 },
   level: { type: String, default: 'Beginner Debugger' },
   postsCreated: { type: Number, default: 0 },
@@ -173,7 +173,6 @@ const groupSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-// Feedback schema
 const feedbackSchema = new mongoose.Schema({
   id: { type: String, default: uuidv4, unique: true },
   userId: String,
@@ -182,6 +181,15 @@ const feedbackSchema = new mongoose.Schema({
   rating: { type: Number, min: 1, max: 5, default: 0 },
   status: { type: String, default: 'pending' },
   adminReply: String,
+  createdAt: { type: Date, default: Date.now },
+});
+
+const announcementSchema = new mongoose.Schema({
+  id: { type: String, default: uuidv4, unique: true },
+  title: String,
+  content: String,
+  authorId: String,
+  priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -199,6 +207,7 @@ const Follow = mongoose.model('Follow', followSchema);
 const LeaderboardArchive = mongoose.model('LeaderboardArchive', leaderboardArchiveSchema);
 const Group = mongoose.model('Group', groupSchema);
 const Feedback = mongoose.model('Feedback', feedbackSchema);
+const Announcement = mongoose.model('Announcement', announcementSchema);
 
 // ========== INIT DEFAULT DATA ==========
 async function initDefaultData() {
@@ -230,14 +239,13 @@ async function initDefaultData() {
   }
 }
 
-// Helper log
 async function addLog(action, userId, details) {
   try {
     await Log.create({ action, userId, details });
   } catch (err) { console.error('Log error:', err); }
 }
 
-// ========== UPLOADS ==========
+// ========== MULTER (uploads) ==========
 const profileStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'public/uploads/profiles/'),
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
@@ -270,7 +278,7 @@ app.get('/api/online-users', auth, async (req, res) => {
   res.json(onlineList);
 });
 
-// ========== AUTH ==========
+// ========== AUTHENTICATION ==========
 app.post('/api/auth/signup', async (req, res) => {
   const { username, email, password } = req.body;
   const existing = await User.findOne({ email });
@@ -630,44 +638,51 @@ app.post('/api/messages', auth, async (req, res) => {
   res.json(newMsg);
 });
 
-// Groups (user gets groups they are member of)
+// GROUPS (User & Admin)
 app.get('/api/groups', auth, async (req, res) => {
   const groups = await Group.find({ members: req.userId });
   res.json(groups);
 });
 
-// Admin creates a group (with genderType)
-app.post('/api/admin/groups', auth, async (req, res) => {
-  if (req.role !== 'admin') return res.status(403);
-  const { name, genderType, members } = req.body;
-  const newGroup = await Group.create({
-    name,
-    creatorId: req.userId,
-    genderType: genderType || 'mixed',
-    members: [req.userId, ...(members || [])],
-  });
-  res.json(newGroup);
-});
-
-// Admin gets all groups
 app.get('/api/admin/groups', auth, async (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const groups = await Group.find();
   res.json(groups);
 });
 
-// Admin adds members to a group
-app.put('/api/admin/groups/:groupId/add-members', auth, async (req, res) => {
+app.post('/api/admin/groups', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const { name, genderType } = req.body;
+  const newGroup = await Group.create({
+    name,
+    creatorId: req.userId,
+    genderType: genderType || 'mixed',
+    members: [req.userId],
+  });
+  res.json(newGroup);
+});
+
+app.post('/api/admin/groups/:groupId/add-members', auth, async (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const { memberIds } = req.body;
   const group = await Group.findOne({ id: req.params.groupId });
   if (!group) return res.status(404);
-  group.members.push(...memberIds.filter(id => !group.members.includes(id)));
+  memberIds.forEach(id => {
+    if (!group.members.includes(id)) group.members.push(id);
+  });
   await group.save();
   res.json(group);
 });
 
-// Group messaging (unchanged)
+app.delete('/api/admin/groups/:groupId/members/:userId', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const group = await Group.findOne({ id: req.params.groupId });
+  if (!group) return res.status(404);
+  group.members = group.members.filter(m => m !== req.params.userId);
+  await group.save();
+  res.json(group);
+});
+
 app.post('/api/groups/:groupId/message', auth, async (req, res) => {
   const group = await Group.findOne({ id: req.params.groupId });
   if (!group) return res.status(404);
@@ -684,12 +699,35 @@ app.get('/api/groups/:groupId/messages', auth, async (req, res) => {
   res.json(group.messages || []);
 });
 
-// ========== FEEDBACK SYSTEM ==========
-// User submits feedback
+// ========== ANNOUNCEMENTS ==========
+app.get('/api/announcements', auth, async (req, res) => {
+  const announcements = await Announcement.find().sort({ createdAt: -1 });
+  res.json(announcements);
+});
+
+app.post('/api/admin/announcements', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const { title, content, priority } = req.body;
+  const announcement = await Announcement.create({
+    title,
+    content,
+    authorId: req.userId,
+    priority: priority || 'medium',
+  });
+  res.json(announcement);
+});
+
+app.delete('/api/admin/announcements/:id', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  await Announcement.deleteOne({ id: req.params.id });
+  res.json({ success: true });
+});
+
+// ========== FEEDBACK ==========
 app.post('/api/feedback', auth, async (req, res) => {
   const { message, rating } = req.body;
   const user = await User.findOne({ id: req.userId });
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (!user) return res.status(404);
   const feedback = await Feedback.create({
     userId: req.userId,
     username: user.username,
@@ -699,14 +737,12 @@ app.post('/api/feedback', auth, async (req, res) => {
   res.json(feedback);
 });
 
-// Admin gets all feedback
 app.get('/api/admin/feedback', auth, async (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const feedbacks = await Feedback.find().sort({ createdAt: -1 });
   res.json(feedbacks);
 });
 
-// Admin replies to feedback
 app.put('/api/admin/feedback/:id/reply', auth, async (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const { reply } = req.body;
@@ -784,7 +820,7 @@ app.get('/api/leaderboard/archive', async (req, res) => {
   res.json(archive);
 });
 
-// ========== ADMIN PANEL ==========
+// ========== ADMIN PANEL STATS & MANAGEMENT ==========
 app.get('/api/admin/stats', auth, async (req, res) => {
   if (req.role !== 'admin') return res.status(403);
   const totalUsers = await User.countDocuments();

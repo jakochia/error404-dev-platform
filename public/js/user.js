@@ -1,3 +1,6 @@
+// ========== GLOBAL ==========
+let currentUserId = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadProfile();
   await loadFeed();
@@ -5,18 +8,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadChallenges();
   await loadLeaderboard();
   await loadSavedPosts();
+  await loadUserGroups();        // Groups user belongs to
+  await loadAnnouncements();     // Announcements
+  await loadFeedbackForm();      // Not needed, just event listener
 
+  // Event listeners
   document.getElementById('updateProfileBtn')?.addEventListener('click', updateProfile);
   document.getElementById('uploadProfilePic')?.addEventListener('change', uploadProfilePic);
   document.getElementById('changePwdBtn')?.addEventListener('click', changePassword);
   document.getElementById('deleteAccountBtn')?.addEventListener('click', deleteAccount);
   document.getElementById('uploadMemeForm')?.addEventListener('submit', uploadMeme);
   document.getElementById('createPostForm')?.addEventListener('submit', createPost);
+  document.getElementById('submitFeedbackBtn')?.addEventListener('click', submitFeedback);
 });
 
+// ========== PROFILE ==========
 async function loadProfile() {
   const res = await fetchAuth('/user/profile');
   const user = await res.json();
+  currentUserId = user.id;
   document.getElementById('username').innerText = user.username;
   if (user.verifiedTick) document.getElementById('verifiedBadge').style.display = 'inline';
   if (user.profilePic) document.getElementById('profileImg').src = user.profilePic;
@@ -116,6 +126,7 @@ async function deleteAccount() {
   }
 }
 
+// ========== MEMES ==========
 async function uploadMeme(e) {
   e.preventDefault();
   const title = document.getElementById('memeTitle').value;
@@ -141,6 +152,7 @@ async function loadMemes() {
   const res = await fetchAuth('/memes');
   const memes = await res.json();
   const container = document.getElementById('memesFeed');
+  if (!container) return;
   container.innerHTML = '';
   memes.forEach(meme => {
     const div = document.createElement('div');
@@ -161,18 +173,20 @@ async function loadMemes() {
   });
 }
 
+// ========== FEED ==========
 async function loadFeed() {
   const res = await fetchAuth('/posts');
   const posts = await res.json();
   const container = document.getElementById('postsFeed');
+  if (!container) return;
   container.innerHTML = '';
   for (const post of posts) {
     const div = document.createElement('div');
     div.className = 'glass-card';
     div.innerHTML = `
-      <h3>${post.title}</h3>
+      <h3>${escapeHtml(post.title)}</h3>
       <small>by ${post.authorName} ${post.authorVerified ? '✅' : ''} | ${new Date(post.createdAt).toLocaleString()}</small>
-      <p>${post.content.substring(0, 200)}...</p>
+      <p>${escapeHtml(post.content.substring(0, 200))}...</p>
       <button class="btn like-btn" data-id="${post.id}">❤️ ${post.likes.length}</button>
       <button class="btn-small save-btn" data-id="${post.id}">🔖 Save</button>
       <button class="btn-small report-btn" data-id="${post.id}">🚨 Report</button>
@@ -201,10 +215,12 @@ async function loadFeed() {
   });
 }
 
+// ========== DEBUG ARENA ==========
 async function loadChallenges() {
   const res = await fetchAuth('/challenges');
   const challenges = await res.json();
   const container = document.getElementById('challengesList');
+  if (!container) return;
   container.innerHTML = '';
   challenges.forEach(ch => {
     const div = document.createElement('div');
@@ -249,6 +265,7 @@ async function loadLeaderboard() {
   }
 }
 
+// ========== SAVED POSTS ==========
 async function loadSavedPosts() {
   const res = await fetchAuth('/user/saved-posts');
   const posts = await res.json();
@@ -279,3 +296,77 @@ async function createPost(e) {
     e.target.reset();
   } else showToast('Failed', true);
 }
+
+// ========== FEEDBACK ==========
+async function submitFeedback() {
+  const message = document.getElementById('feedbackMsg')?.value;
+  const rating = document.getElementById('feedbackRating')?.value;
+  if (!message || !message.trim()) return alert('Please enter feedback');
+  const res = await fetchAuth('/feedback', {
+    method: 'POST',
+    body: JSON.stringify({ message, rating: parseInt(rating) })
+  });
+  if (res.ok) {
+    alert('Thank you for your feedback!');
+    document.getElementById('feedbackMsg').value = '';
+  } else alert('Failed to submit');
+}
+
+// ========== GROUPS (USER) ==========
+async function loadUserGroups() {
+  const res = await fetchAuth('/groups');
+  const groups = await res.json();
+  const container = document.getElementById('userGroupsList');
+  if (!container) return;
+  container.innerHTML = '';
+  if (groups.length === 0) {
+    container.innerHTML = '<p>You are not in any groups yet.</p>';
+    return;
+  }
+  groups.forEach(group => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <h3>👥 ${escapeHtml(group.name)}</h3>
+      <p>Type: ${group.genderType || 'mixed'}</p>
+      <p>Members: ${group.members.length}</p>
+      <button class="btn-small view-group-chat" data-id="${group.id}" data-name="${escapeHtml(group.name)}">Open Chat</button>
+    `;
+    container.appendChild(div);
+  });
+  // Add event listeners to open group chat (you can redirect to messages page or open modal)
+  document.querySelectorAll('.view-group-chat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const groupId = btn.dataset.id;
+      const groupName = btn.dataset.name;
+      // Redirect to messages page with group parameter
+      window.location.href = `/messages.html?group=${groupId}&name=${encodeURIComponent(groupName)}`;
+    });
+  });
+}
+
+// ========== ANNOUNCEMENTS ==========
+async function loadAnnouncements() {
+  const res = await fetchAuth('/announcements');
+  const announcements = await res.json();
+  const container = document.getElementById('announcementsList');
+  if (!container) return;
+  container.innerHTML = '';
+  if (announcements.length === 0) {
+    container.innerHTML = '<p>No announcements yet.</p>';
+    return;
+  }
+  announcements.forEach(ann => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.innerHTML = `
+      <h3>📢 ${escapeHtml(ann.title)} ${ann.pinned ? '📌' : ''}</h3>
+      <p>${escapeHtml(ann.content)}</p>
+      <small>Posted: ${new Date(ann.createdAt).toLocaleString()}</small>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ========== UTILITIES ==========
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
