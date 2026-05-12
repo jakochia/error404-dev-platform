@@ -977,6 +977,12 @@ app.get('/api/user/challenge-progress', auth, async (req, res) => {
   if (!user) return res.status(404);
   res.json({ completed: user.completedChallenges || [], completedAll: user.allChallengesCompletedAt ? new Date(user.allChallengesCompletedAt) : null });
 });
+// Contact admin endpoint – returns admin user info
+app.get('/api/contact-admin', auth, async (req, res) => {
+  const admin = await User.findOne({ role: 'admin' }).select('id username');
+  if (!admin) return res.status(404).json({ error: 'No admin found' });
+  res.json({ id: admin.id, username: admin.username });
+});
 
 // ========== SERVE STATIC PAGES ==========
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));

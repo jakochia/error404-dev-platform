@@ -478,3 +478,67 @@ function showToast(msg, isErr = false) {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
+
+// Load conversations for admin
+async function loadAdminConversations() {
+  const res = await fetchAuth('/conversations');
+  if (!res.ok) return;
+  const conversations = await res.json();
+  const container = document.getElementById('adminConversationsList');
+  if (!container) return;
+  container.innerHTML = '<div class="glass-card"><h3>Conversations</h3></div>';
+  if (conversations.length === 0) {
+    container.innerHTML += '<p>No messages yet.</p>';
+    return;
+  }
+  conversations.forEach(conv => {
+    const div = document.createElement('div');
+    div.className = 'glass-card';
+    div.style.cursor = 'pointer';
+    div.innerHTML = `<strong>${conv.otherName}</strong><br><small>${conv.lastMsg}</small><br><small>${new Date(conv.lastTime).toLocaleString()}</small>`;
+    div.addEventListener('click', () => openAdminChat(conv.otherId, conv.otherName));
+    container.appendChild(div);
+  });
+}
+
+let currentChatUserId = null;
+let currentChatUserName = null;
+
+async function openAdminChat(userId, userName) {
+  currentChatUserId = userId;
+  currentChatUserName = userName;
+  document.getElementById('chatWithName').innerText = `Chat with ${userName}`;
+  document.getElementById('adminChatArea').style.display = 'block';
+  // Load messages
+  const res = await fetchAuth(`/messages/${userId}`);
+  const messages = await res.json();
+  const container = document.getElementById('adminChatMessages');
+  container.innerHTML = messages.map(m => `
+    <div style="text-align:${m.from === currentChatUserId ? 'left' : 'right'}; margin-bottom:8px;">
+      <div style="display:inline-block; padding:8px; border-radius:12px; background:${m.from === currentChatUserId ? '#1a1f2e' : '#ff004c'}">
+        <strong>${m.from === currentChatUserId ? userName : 'You'}:</strong> ${escapeHtml(m.text)}
+      </div>
+      <div style="font-size:0.7rem; color:#888;">${new Date(m.createdAt).toLocaleString()}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+document.getElementById('sendReplyBtn')?.addEventListener('click', async () => {
+  const text = document.getElementById('adminReplyMsg').value.trim();
+  if (!text || !currentChatUserId) return;
+  const res = await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: currentChatUserId, text }) });
+  if (res.ok) {
+    document.getElementById('adminReplyMsg').value = '';
+    openAdminChat(currentChatUserId, currentChatUserName);
+  } else {
+    alert('Failed to send reply');
+  }
+});
+
+// Call loadAdminConversations when the Messages section becomes active
+// Add this inside your section switch logic (you can attach to the sidebar click)
+// For simplicity, add a listener on the Messages sidebar item to load conversations.
+document.querySelector('[data-section="messages"]')?.addEventListener('click', () => {
+  loadAdminConversations();
+});

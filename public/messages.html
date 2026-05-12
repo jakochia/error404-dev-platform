@@ -1,23 +1,41 @@
 <!DOCTYPE html>
 <html>
-<head><link rel="stylesheet" href="/css/style.css"><title>Messages & Groups</title>
-<style>
-  .chat-layout { display: flex; gap: 20px; flex-wrap: wrap; }
-  .sidebar-chat { flex: 1; min-width: 250px; background: #0a0c14; border-radius: 12px; padding: 15px; }
-  .chat-area { flex: 2; min-width: 300px; background: #0a0c14; border-radius: 12px; padding: 15px; }
-  .online-dot { display: inline-block; width: 8px; height: 8px; background: #00ff00; border-radius: 50%; margin-left: 8px; }
-  .group-item, .user-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #333; }
-  .group-item:hover, .user-item:hover { background: #1a1f2e; }
-</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 DEV | Messages & Groups</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .chat-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+    .sidebar-chat { flex: 1; min-width: 250px; background: #0a0c14; border-radius: 12px; padding: 15px; }
+    .chat-area { flex: 2; min-width: 300px; background: #0a0c14; border-radius: 12px; padding: 15px; }
+    .online-dot { display: inline-block; width: 8px; height: 8px; background: #00ff00; border-radius: 50%; margin-left: 8px; }
+    .group-item, .user-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #333; }
+    .group-item:hover, .user-item:hover { background: #1a1f2e; }
+    .message-bubble {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 18px;
+      max-width: 80%;
+      margin: 4px 0;
+    }
+    .message-right { text-align: right; }
+    .message-right .message-bubble { background: #ff004c; color: white; }
+    .message-left .message-bubble { background: #1a1f2e; color: #eef5ff; }
+  </style>
 </head>
 <body>
-<div class="navbar"><a href="/user-dashboard.html">🏠 Dashboard</a> <button id="themeToggle" class="btn-small">🌓</button> <a href="#" id="logoutBtn">Logout</a></div>
+<div class="navbar">
+  <a href="/user-dashboard.html">🏠 Dashboard</a>
+  <button id="themeToggle" class="btn-small">🌓</button>
+  <a href="#" id="logoutBtn">Logout</a>
+</div>
 <div class="container">
   <h1>💬 Messages & Groups</h1>
   <div class="chat-layout">
     <div class="sidebar-chat glass-card">
       <h3>👥 Your Groups</h3>
-      <div id="groupsList"></div>
+      <div id="groupsList">Loading groups...</div>
       <hr>
       <h3>🟢 Online Users</h3>
       <div id="onlineUsersList"></div>
@@ -35,88 +53,152 @@
 </div>
 <script src="/js/common.js"></script>
 <script>
-let currentChatType = null; // 'user' or 'group'
-let currentChatId = null;
-let currentChatName = null;
+  let currentChatType = null; // 'user' or 'group'
+  let currentChatId = null;
+  let currentChatName = null;
+  let allUsers = [];
 
-async function loadGroups() {
-  const res = await fetchAuth('/groups');
-  const groups = await res.json();
-  const div = document.getElementById('groupsList');
-  div.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${g.name}')">👥 ${g.name}</div>`).join('');
-}
-
-async function loadOnlineUsers() {
-  const res = await fetchAuth('/online-users');
-  const onlineUsers = await res.json();
-  const container = document.getElementById('onlineUsersList');
-  container.innerHTML = onlineUsers.map(u => `<div class="user-item" onclick="startDM('${u.id}', '${u.username}')">${u.username}<span class="online-dot"></span></div>`).join('');
-}
-
-async function loadConversations() {
-  const res = await fetchAuth('/conversations');
-  const convs = await res.json();
-  const div = document.getElementById('convList');
-  div.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${c.otherName}')"><strong>${c.otherName}</strong><br><small>${c.lastMsg}</small></div>`).join('');
-}
-
-window.startDM = async function(otherId, name) {
-  currentChatType = 'user';
-  currentChatId = otherId;
-  currentChatName = name;
-  document.getElementById('chatHeader').innerText = `Chat with ${name}`;
-  const res = await fetchAuth(`/messages/${otherId}`);
-  const msgs = await res.json();
-  const container = document.getElementById('chatMessages');
-  container.innerHTML = msgs.map(m => `<div style="text-align:${m.from === localStorage.getItem('userId') ? 'right' : 'left'}; margin:8px;"><b>${m.from === localStorage.getItem('userId') ? 'You' : name}:</b> ${escapeHtml(m.text)}</div>`).join('');
-};
-
-window.openGroup = async function(groupId, name) {
-  currentChatType = 'group';
-  currentChatId = groupId;
-  currentChatName = name;
-  document.getElementById('chatHeader').innerText = `Group: ${name}`;
-  const res = await fetchAuth(`/groups/${groupId}/messages`);
-  const msgs = await res.json();
-  const container = document.getElementById('chatMessages');
-  const users = await (await fetchAuth('/admin/users')).json();
-  container.innerHTML = msgs.map(m => {
-    const userName = users.find(u => u.id === m.from)?.username || m.from;
-    return `<div><b>${escapeHtml(userName)}:</b> ${escapeHtml(m.text)}</div>`;
-  }).join('');
-};
-
-document.getElementById('sendMsg').onclick = async () => {
-  const text = document.getElementById('msgInput').value.trim();
-  if (!text || !currentChatId) return;
-  if (currentChatType === 'user') {
-    await fetchAuth('/messages', { method:'POST', body: JSON.stringify({ to: currentChatId, text }) });
-    startDM(currentChatId, currentChatName);
-  } else if (currentChatType === 'group') {
-    await fetchAuth(`/groups/${currentChatId}/message`, { method:'POST', body: JSON.stringify({ text }) });
-    openGroup(currentChatId, currentChatName);
+  async function fetchAuth(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = '/login.html'; return; }
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/api' + url, { ...options, headers });
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+    return res;
   }
-  document.getElementById('msgInput').value = '';
-};
 
-// Online status heartbeat
-async function updateOnlineStatus() { await fetchAuth('/online', { method: 'POST' }); }
-updateOnlineStatus();
-setInterval(updateOnlineStatus, 30000);
-window.addEventListener('beforeunload', () => {
-  fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
-});
+  async function loadUsers() {
+    const res = await fetchAuth('/admin/users');
+    allUsers = await res.json();
+  }
 
-function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+  async function loadGroups() {
+    const res = await fetchAuth('/groups');
+    const groups = await res.json();
+    const div = document.getElementById('groupsList');
+    if (!div) return;
+    if (groups.length === 0) {
+      div.innerHTML = '<p>You are not in any group yet.</p>';
+      return;
+    }
+    div.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${escapeHtml(g.name)}')">👥 ${escapeHtml(g.name)}</div>`).join('');
+  }
 
-loadGroups();
-loadOnlineUsers();
-loadConversations();
-document.getElementById('logoutBtn').onclick = () => {
-  fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
-  logout();
-};
-initTheme();
+  async function loadOnlineUsers() {
+    const res = await fetchAuth('/online-users');
+    const onlineUsers = await res.json();
+    const container = document.getElementById('onlineUsersList');
+    container.innerHTML = onlineUsers.map(u => `<div class="user-item" onclick="startDM('${u.id}', '${escapeHtml(u.username)}')">${escapeHtml(u.username)}<span class="online-dot"></span></div>`).join('');
+  }
+
+  async function loadConversations() {
+    const res = await fetchAuth('/conversations');
+    const convs = await res.json();
+    const div = document.getElementById('convList');
+    if (!div) return;
+    if (convs.length === 0) {
+      div.innerHTML = '<p>No direct messages yet.</p>';
+      return;
+    }
+    div.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${escapeHtml(c.otherName)}')"><strong>${escapeHtml(c.otherName)}</strong><br><small>${escapeHtml(c.lastMsg)}</small></div>`).join('');
+  }
+
+  window.startDM = async function(otherId, name) {
+    currentChatType = 'user';
+    currentChatId = otherId;
+    currentChatName = name;
+    document.getElementById('chatHeader').innerText = `Chat with ${name}`;
+    const res = await fetchAuth(`/messages/${otherId}`);
+    const msgs = await res.json();
+    const container = document.getElementById('chatMessages');
+    container.innerHTML = '';
+    for (const m of msgs) {
+      const isFromMe = m.from === (await getMyId());
+      const div = document.createElement('div');
+      div.className = isFromMe ? 'message-right' : 'message-left';
+      div.innerHTML = `<div class="message-bubble"><strong>${isFromMe ? 'You' : name}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
+      container.appendChild(div);
+    }
+    container.scrollTop = container.scrollHeight;
+  };
+
+  window.openGroup = async function(groupId, name) {
+    currentChatType = 'group';
+    currentChatId = groupId;
+    currentChatName = name;
+    document.getElementById('chatHeader').innerText = `Group: ${name}`;
+    // Fetch group messages
+    const res = await fetchAuth(`/groups/${groupId}/messages`);
+    const msgs = await res.json();
+    const container = document.getElementById('chatMessages');
+    container.innerHTML = '';
+    for (const m of msgs) {
+      const sender = allUsers.find(u => u.id === m.from)?.username || m.from;
+      const div = document.createElement('div');
+      div.className = 'message-left';
+      div.innerHTML = `<div class="message-bubble"><strong>${escapeHtml(sender)}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
+      container.appendChild(div);
+    }
+    container.scrollTop = container.scrollHeight;
+  };
+
+  // Function to get current user ID (from token or cached)
+  let myId = null;
+  async function getMyId() {
+    if (myId) return myId;
+    const res = await fetchAuth('/user/profile');
+    const user = await res.json();
+    myId = user.id;
+    return myId;
+  }
+
+  document.getElementById('sendMsg').onclick = async () => {
+    const text = document.getElementById('msgInput').value.trim();
+    if (!text || !currentChatId) return;
+    if (currentChatType === 'user') {
+      const res = await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: currentChatId, text }) });
+      if (res.ok) {
+        document.getElementById('msgInput').value = '';
+        startDM(currentChatId, currentChatName);
+        // Also refresh conversations list
+        loadConversations();
+      }
+    } else if (currentChatType === 'group') {
+      const res = await fetchAuth(`/groups/${currentChatId}/message`, { method: 'POST', body: JSON.stringify({ text }) });
+      if (res.ok) {
+        document.getElementById('msgInput').value = '';
+        openGroup(currentChatId, currentChatName);
+      }
+    }
+  };
+
+  // Heartbeat for online status
+  async function updateOnlineStatus() { await fetchAuth('/online', { method: 'POST' }); }
+  updateOnlineStatus();
+  setInterval(updateOnlineStatus, 30000);
+  window.addEventListener('beforeunload', () => {
+    fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+  });
+
+  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  // Initial load
+  (async () => {
+    await loadUsers();
+    await loadGroups();
+    await loadOnlineUsers();
+    await loadConversations();
+  })();
+
+  // Theme and logout
+  function initTheme() { /* add your theme logic */ }
+  initTheme();
+  document.getElementById('logoutBtn').onclick = () => {
+    fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+  };
 </script>
 </body>
 </html>

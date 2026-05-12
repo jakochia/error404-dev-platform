@@ -1,387 +1,236 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 DEV | Forum</title>
   <link rel="stylesheet" href="/css/style.css">
-  <title>404 DEV | Community Forum // GLITCH TALK</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background: radial-gradient(circle at 10% 20%, #0a0c18 0%, #020408 100%);
-      font-family: 'Inter', system-ui, sans-serif;
-      color: #eef5ff;
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* animated cyber background */
-    .cyber-grid {
+    .contact-admin-btn {
       position: fixed;
-      inset: 0;
-      background-image: 
-        linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .noise {
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 1;
-      mix-blend-mode: overlay;
-    }
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(90px);
-      opacity: 0.25;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .orb-1 { width: 60vw; height: 60vw; background: radial-gradient(circle, #ff1a6e, transparent); top: -30vh; left: -20vw; }
-    .orb-2 { width: 70vw; height: 70vw; background: radial-gradient(circle, #00f0ff, transparent); bottom: -40vh; right: -20vw; animation: floatOrb 18s infinite alternate; }
-    @keyframes floatOrb { 0% { transform: translate(0,0); } 100% { transform: translate(5%, 8%); } }
-
-    /* navbar – modern glass */
-    .navbar {
-      backdrop-filter: blur(16px);
-      background: rgba(5, 10, 25, 0.7);
-      border-radius: 60px;
-      margin: 1rem 1.5rem;
-      padding: 0.6rem 1.8rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      border: 1px solid rgba(255, 51, 102, 0.4);
-      box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
-      position: relative;
-      z-index: 20;
-    }
-    .nav-link {
-      color: #ccd6ff;
-      text-decoration: none;
-      font-weight: 500;
-      padding: 0.5rem 1rem;
-      border-radius: 40px;
-      transition: 0.2s;
-      font-size: 0.9rem;
-    }
-    .nav-link:hover {
-      background: rgba(0, 240, 255, 0.15);
-      color: #00f0ff;
-      transform: translateY(-2px);
-    }
-    .btn-small {
+      bottom: 20px;
+      right: 20px;
       background: #ff004c;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 40px;
       color: white;
-      cursor: pointer;
-      transition: 0.2s;
-      font-weight: 500;
-    }
-    .btn-small:hover {
-      background: #00f0ff;
-      box-shadow: 0 0 12px #00f0ff;
-    }
-
-    /* main container */
-    .container {
-      max-width: 1300px;
-      margin: 1rem auto;
-      padding: 0 1.5rem 2rem;
-      position: relative;
-      z-index: 15;
-    }
-
-    h1 {
-      font-size: clamp(2rem, 8vw, 3.5rem);
-      font-weight: 800;
-      background: linear-gradient(135deg, #ff1a6e, #00f0ff);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      margin-bottom: 1.8rem;
-      text-align: center;
-      animation: glitchPulse 2s infinite alternate;
-    }
-    @keyframes glitchPulse {
-      0% { text-shadow: 0 0 2px #ff1a6e; }
-      100% { text-shadow: 0 0 12px #00f0ff; }
-    }
-
-    /* glass card */
-    .glass-card {
-      background: rgba(10, 15, 30, 0.65);
-      backdrop-filter: blur(14px);
-      border-radius: 32px;
-      border: 1px solid rgba(255, 51, 102, 0.4);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      transition: all 0.2s;
-    }
-    .glass-card:hover {
-      border-color: rgba(0, 240, 255, 0.6);
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-    }
-
-    .btn {
-      background: linear-gradient(95deg, #ff004c, #c4003b);
       border: none;
-      padding: 10px 24px;
-      border-radius: 60px;
-      font-weight: 700;
-      color: white;
+      border-radius: 50px;
+      padding: 12px 20px;
       cursor: pointer;
-      transition: 0.2s;
-      font-size: 0.9rem;
+      z-index: 1000;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .btn:hover {
-      background: linear-gradient(95deg, #00c3ff, #0080aa);
-      box-shadow: 0 0 16px #0ff;
-      transform: scale(1.02);
-    }
-
-    /* fix-card for comments */
-    .fix-card {
-      background: #0a0c14;
-      padding: 1rem;
-      border-radius: 20px;
-      margin-top: 12px;
-      border-left: 4px solid #ff004c;
-      font-family: 'Inter', monospace;
-    }
-
-    /* modal styling */
-    #threadModal {
+    .modal {
+      display: none;
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(8, 12, 24, 0.95);
-      backdrop-filter: blur(20px);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #0b0f1a;
       border: 2px solid #ff004c;
-      border-radius: 32px;
+      border-radius: 24px;
       padding: 2rem;
       width: 90%;
-      max-width: 550px;
-      z-index: 1000;
-      box-shadow: 0 0 50px rgba(0,0,0,0.6);
-      animation: fadeModal 0.2s ease-out;
-    }
-    @keyframes fadeModal {
-      from { opacity: 0; transform: translate(-50%, -48%); }
-      to { opacity: 1; transform: translate(-50%, -50%); }
-    }
-    #threadModal h3 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      color: #ffb3c6;
-    }
-    #threadModal input, #threadModal textarea, #threadModal select {
-      width: 100%;
-      padding: 12px 16px;
-      margin: 8px 0;
-      background: rgba(0,0,0,0.6);
-      border: 1px solid #ff3366;
-      border-radius: 20px;
-      color: white;
-      font-family: 'Inter', monospace;
-    }
-    #threadModal input:focus, #threadModal textarea:focus {
-      border-color: #0ff;
-      outline: none;
-    }
-
-    /* dynamic thread modal (view thread) */
-    .modal-glass {
-      position: fixed;
-      top: 5%;
-      left: 5%;
-      width: 90%;
-      max-height: 90%;
-      background: rgba(8, 12, 24, 0.96);
-      backdrop-filter: blur(20px);
-      border-radius: 32px;
-      border: 1px solid #0ff;
-      padding: 1.5rem;
-      overflow-y: auto;
-      z-index: 1001;
-      box-shadow: 0 0 40px rgba(0,240,255,0.3);
-    }
-    .modal-glass button {
-      margin-right: 10px;
-    }
-
-    @media (max-width: 750px) {
-      .navbar { margin: 0.5rem; padding: 0.5rem 1rem; gap: 6px; }
-      .container { padding: 0 1rem; }
-      #threadModal { width: 95%; padding: 1.2rem; }
+      max-width: 500px;
     }
   </style>
 </head>
 <body>
-  <div class="cyber-grid"></div>
-  <div class="noise"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-
-  <div class="navbar">
-    <a href="/user-dashboard.html" class="nav-link">🏠 Dashboard</a>
-    <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
-    <a href="/forum.html" class="nav-link">💬 Forum</a>
-    <a href="/playground.html" class="nav-link">🧪 Playground</a>
-    <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
-    <a href="/messages.html" class="nav-link">💬 Messages</a>
-    <button id="themeToggle" class="btn-small">🌓</button>
-    <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
-  </div>
-
-  <div class="container">
-    <h1>💬 Developer Forum</h1>
-    <div class="glass-card">
-      <button id="newThreadBtn" class="btn">+ Create New Thread</button>
-      <div id="threadsList"></div>
-    </div>
-    <!-- thread creation modal (preserved structure) -->
-    <div id="threadModal" style="display:none;">
-      <h3>✨ New Thread</h3>
-      <input type="text" id="threadTitle" placeholder="Title" style="width:100%"><br>
-      <textarea id="threadContent" rows="5" placeholder="Content"></textarea><br>
-      <select id="threadCategory">
-        <option>General</option>
-        <option>Code Review</option>
-        <option>Help</option>
-      </select><br>
-      <button id="submitThread" class="btn">Post</button>
-      <button id="closeModal" class="btn" style="background:#333">Cancel</button>
-    </div>
-  </div>
-
-  <button id="contactAdminBtn" class="btn-primary" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;"><i class="fas fa-envelope"></i> Contact Admin</button>
-
-<div id="adminContactModal" style="display:none; position:fixed; top:20%; left:25%; width:50%; background:#0b0f1a; border:2px solid #ff004c; border-radius:24px; padding:2rem; z-index:2000;">
-  <h3>Send Message to Admin</h3>
-  <textarea id="adminMsg" rows="4" placeholder="Describe your issue..."></textarea>
-  <button id="sendAdminMsg" class="btn-primary">Send</button>
-  <button id="closeAdminModal" class="btn">Cancel</button>
+<div class="navbar">
+  <a href="/user-dashboard.html">🏠 Dashboard</a>
+  <a href="/coding-hub.html">💻 Coding Hub</a>
+  <a href="/forum.html">💬 Forum</a>
+  <a href="/playground.html">🧪 Playground</a>
+  <a href="/toolkit.html">🛠️ Toolkit</a>
+  <a href="/messages.html">💬 Messages</a>
+  <button id="themeToggle" class="btn-small">🌓</button>
+  <a href="#" id="logoutBtn">🚪 Logout</a>
 </div>
 
-  <!-- ORIGINAL SCRIPT – exactly preserved -->
-  <script src="/js/common.js"></script>
-  <script>
-    async function loadThreads() {
-      const res = await fetchAuth('/threads');
-      const threads = await res.json();
-      const container = document.getElementById('threadsList');
-      container.innerHTML = '';
-      for (const thread of threads) {
-        const div = document.createElement('div');
-        div.className = 'glass-card';
-        div.innerHTML = `
-          <h3>${escapeHtml(thread.title)}</h3>
-          <small>by ${thread.authorName} ${thread.authorVerified ? '✅' : ''} | ${new Date(thread.createdAt).toLocaleString()}</small>
-          <p>${escapeHtml(thread.content.substring(0, 150))}</p>
-          <button class="btn-small view-thread" data-id="${thread.id}">View & Comment</button>
-        `;
-        container.appendChild(div);
-      }
-      document.querySelectorAll('.view-thread').forEach(btn => btn.addEventListener('click', () => showThread(btn.dataset.id)));
-    }
+<div class="container">
+  <h1>💬 Developer Forum</h1>
+  <div class="glass-card">
+    <button id="newThreadBtn" class="btn">+ Create New Thread</button>
+    <div id="threadsList"></div>
+  </div>
+</div>
 
-    async function showThread(threadId) {
-      const res = await fetchAuth('/threads');
-      const threads = await res.json();
-      const thread = threads.find(t => t.id === threadId);
-      if (!thread) return;
-      const modal = document.createElement('div');
-      modal.className = 'modal-glass';
-      modal.innerHTML = `
-        <h2>${escapeHtml(thread.title)}</h2>
-        <p>${escapeHtml(thread.content)}</p>
-        <hr><h4>💬 Comments</h4><div id="commentsList"></div>
-        <textarea id="newComment" rows="2" placeholder="Write a comment..."></textarea>
-        <button id="postCommentBtn" data-id="${thread.id}" class="btn">Post Comment</button>
-        <button id="closeModalBtn" class="btn" style="background:#333">Close</button>
-      `;
-      document.body.appendChild(modal);
-      const commentsDiv = modal.querySelector('#commentsList');
-      thread.comments.forEach(c => {
-        commentsDiv.innerHTML += `
-          <div class="fix-card">
-            <strong>${c.authorId}</strong>: ${escapeHtml(c.text)} <br>
-            <small>${new Date(c.createdAt).toLocaleString()}</small>
-            <button class="btn-small report-comment" data-id="${c.id}">🚨 Report</button>
-          </div>`;
-      });
-      // Attach report listeners
-      modal.querySelectorAll('.report-comment').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const reason = prompt('Why report this comment?');
-          if (reason) reportContent('comment', btn.dataset.id, reason);
-        });
-      });
-      modal.querySelector('#postCommentBtn').addEventListener('click', async () => {
-        const text = modal.querySelector('#newComment').value;
-        if (!text) return;
-        await fetchAuth(`/threads/${thread.id}/comment`, { method: 'POST', body: JSON.stringify({ text }) });
-        modal.remove();
-        showThread(thread.id);
-      });
-      modal.querySelector('#closeModalBtn').addEventListener('click', () => modal.remove());
-    }
+<button id="contactAdminBtn" class="contact-admin-btn">📧 Contact Admin</button>
 
-    document.getElementById('newThreadBtn').addEventListener('click', () => {
-      document.getElementById('threadModal').style.display = 'block';
-    });
-    document.getElementById('closeModal').addEventListener('click', () => {
-      document.getElementById('threadModal').style.display = 'none';
-    });
-    document.getElementById('submitThread').addEventListener('click', async () => {
-      const title = document.getElementById('threadTitle').value;
-      const content = document.getElementById('threadContent').value;
-      const category = document.getElementById('threadCategory').value;
-      if (!title || !content) return;
-      await fetchAuth('/threads', { method: 'POST', body: JSON.stringify({ title, content, category }) });
-      document.getElementById('threadModal').style.display = 'none';
-      loadThreads();
-    });
-    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-    loadThreads();
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    initTheme();
+<div id="adminContactModal" class="modal">
+  <div class="modal-content">
+    <h3 style="color:#ff004c">Send Message to Admin</h3>
+    <textarea id="adminMsg" rows="4" placeholder="Describe your issue..." style="width:100%; margin:1rem 0;"></textarea>
+    <button id="sendAdminMsg" class="btn">Send</button>
+    <button id="closeAdminModal" class="btn" style="background:#333">Cancel</button>
+    <div id="contactResult" style="margin-top:10px;"></div>
+  </div>
+</div>
 
-    document.getElementById('contactAdminBtn')?.addEventListener('click', () => {
-  document.getElementById('adminContactModal').style.display = 'flex';
-});
-document.getElementById('closeAdminModal')?.addEventListener('click', () => {
-  document.getElementById('adminContactModal').style.display = 'none';
-});
-document.getElementById('sendAdminMsg')?.addEventListener('click', async () => {
-  const msg = document.getElementById('adminMsg').value;
-  if (!msg.trim()) return;
-  const adminUser = await (await fetchAuth('/admin/users')).json(); // get admin ID
-  const admin = adminUser.find(u => u.role === 'admin');
-  if (admin) {
-    await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: admin.id, text: `[CONTACT FORM] ${msg}` }) });
-    alert('Your message has been sent to the admin.');
+<script src="/js/common.js"></script>
+<script>
+  // Helper: fetch with auth
+  async function fetchAuth(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = '/login.html'; return; }
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/api' + url, { ...options, headers });
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+    return res;
   }
-  document.getElementById('adminContactModal').style.display = 'none';
-});
-  </script>
+
+  // Load forum threads
+  async function loadThreads() {
+    const res = await fetchAuth('/threads');
+    if (!res) return;
+    const threads = await res.json();
+    const container = document.getElementById('threadsList');
+    container.innerHTML = '';
+    for (const thread of threads) {
+      const div = document.createElement('div');
+      div.className = 'glass-card';
+      div.innerHTML = `
+        <h3>${escapeHtml(thread.title)}</h3>
+        <small>by ${thread.authorName} ${thread.authorVerified ? '✅' : ''} | ${new Date(thread.createdAt).toLocaleString()}</small>
+        <p>${escapeHtml(thread.content.substring(0, 150))}</p>
+        <button class="btn-small view-thread" data-id="${thread.id}">View & Comment</button>
+      `;
+      container.appendChild(div);
+    }
+    document.querySelectorAll('.view-thread').forEach(btn => btn.addEventListener('click', () => showThread(btn.dataset.id)));
+  }
+
+  async function showThread(threadId) {
+    const res = await fetchAuth('/threads');
+    if (!res) return;
+    const threads = await res.json();
+    const thread = threads.find(t => t.id === threadId);
+    if (!thread) return;
+    const modal = document.createElement('div');
+    modal.className = 'glass-card';
+    modal.style.position = 'fixed';
+    modal.style.top = '10%';
+    modal.style.left = '10%';
+    modal.style.width = '80%';
+    modal.style.maxHeight = '80%';
+    modal.style.overflow = 'auto';
+    modal.style.zIndex = '1000';
+    modal.innerHTML = `
+      <h2>${escapeHtml(thread.title)}</h2>
+      <p>${escapeHtml(thread.content)}</p>
+      <hr><h4>Comments</h4><div id="commentsList"></div>
+      <textarea id="newComment" rows="2" placeholder="Write a comment..."></textarea>
+      <button id="postCommentBtn" data-id="${thread.id}" class="btn">Post Comment</button>
+      <button id="closeModalBtn" class="btn" style="background:#333">Close</button>
+    `;
+    document.body.appendChild(modal);
+    const commentsDiv = modal.querySelector('#commentsList');
+    thread.comments.forEach(c => {
+      commentsDiv.innerHTML += `<div class="fix-card"><strong>${c.authorId}</strong>: ${escapeHtml(c.text)} <br><small>${new Date(c.createdAt).toLocaleString()}</small></div>`;
+    });
+    modal.querySelector('#postCommentBtn').addEventListener('click', async () => {
+      const text = modal.querySelector('#newComment').value;
+      if (!text) return;
+      await fetchAuth(`/threads/${thread.id}/comment`, { method: 'POST', body: JSON.stringify({ text }) });
+      modal.remove();
+      showThread(thread.id);
+    });
+    modal.querySelector('#closeModalBtn').addEventListener('click', () => modal.remove());
+  }
+
+  document.getElementById('newThreadBtn').addEventListener('click', async () => {
+    const title = prompt('Thread title:');
+    if (!title) return;
+    const content = prompt('Thread content:');
+    if (!content) return;
+    await fetchAuth('/threads', { method: 'POST', body: JSON.stringify({ title, content, category: 'General' }) });
+    loadThreads();
+  });
+
+  // ========== CONTACT ADMIN LOGIC (with fallback) ==========
+  const modal = document.getElementById('adminContactModal');
+  const contactBtn = document.getElementById('contactAdminBtn');
+  const closeModal = document.getElementById('closeAdminModal');
+  const sendBtn = document.getElementById('sendAdminMsg');
+  const msgField = document.getElementById('adminMsg');
+  const resultDiv = document.getElementById('contactResult');
+
+  contactBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+  });
+  closeModal.addEventListener('click', () => {
+    modal.style.display = 'none';
+    msgField.value = '';
+    resultDiv.innerHTML = '';
+  });
+
+  sendBtn.addEventListener('click', async () => {
+    const msg = msgField.value.trim();
+    if (!msg) {
+      resultDiv.innerHTML = '<span style="color:#ff004c">Please enter a message.</span>';
+      return;
+    }
+    resultDiv.innerHTML = '<span style="color:#00f0ff">Sending...</span>';
+    try {
+      // Try to get admin via dedicated endpoint
+      let adminId = null;
+      const contactRes = await fetchAuth('/contact-admin');
+      if (contactRes && contactRes.ok) {
+        const admin = await contactRes.json();
+        adminId = admin.id;
+      } else {
+        // Fallback: fetch all users and find admin
+        const usersRes = await fetchAuth('/admin/users');
+        if (usersRes && usersRes.ok) {
+          const users = await usersRes.json();
+          const adminUser = users.find(u => u.role === 'admin');
+          if (adminUser) adminId = adminUser.id;
+        }
+      }
+      if (!adminId) {
+        resultDiv.innerHTML = '<span style="color:#ff004c">Could not find admin. Please try again later.</span>';
+        return;
+      }
+      // Send message
+      const msgRes = await fetchAuth('/messages', {
+        method: 'POST',
+        body: JSON.stringify({ to: adminId, text: `[Contact Form] ${msg}` })
+      });
+      if (msgRes && msgRes.ok) {
+        resultDiv.innerHTML = '<span style="color:#00f0ff">✅ Message sent to admin. Expect a reply soon.</span>';
+        msgField.value = '';
+        setTimeout(() => {
+          modal.style.display = 'none';
+          resultDiv.innerHTML = '';
+        }, 2000);
+      } else {
+        resultDiv.innerHTML = '<span style="color:#ff004c">❌ Failed to send. Try again.</span>';
+      }
+    } catch (err) {
+      console.error(err);
+      resultDiv.innerHTML = '<span style="color:#ff004c">Error sending message. Check console.</span>';
+    }
+  });
+
+  function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+  });
+  document.getElementById('themeToggle')?.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+  });
+  loadThreads();
+</script>
 </body>
 </html>
