@@ -384,6 +384,21 @@ async function createAnnouncement() {
   } else showToast('Failed', true);
 }
 
+document.getElementById('createChallengeBtn')?.addEventListener('click', async () => {
+  const title = document.getElementById('newChallengeTitle').value;
+  const brokenCode = document.getElementById('newChallengeCode').value;
+  const solution = document.getElementById('newChallengeSolution').value;
+  const difficulty = document.getElementById('newChallengeDifficulty').value;
+  const xpReward = parseInt(document.getElementById('newChallengeXP').value);
+  if (!title || !brokenCode || !solution) return;
+  await fetchAuth('/admin/challenges', {
+    method: 'POST',
+    body: JSON.stringify({ title, brokenCode, solution, difficulty, xpReward })
+  });
+  alert('Challenge created!');
+  // clear form
+});
+
 // ========== LOGS ==========
 async function loadSystemLogs() {
   const res = await fetchAuth('/admin/logs');

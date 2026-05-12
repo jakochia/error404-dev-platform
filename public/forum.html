@@ -272,6 +272,15 @@
     </div>
   </div>
 
+  <button id="contactAdminBtn" class="btn-primary" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 1000;"><i class="fas fa-envelope"></i> Contact Admin</button>
+
+<div id="adminContactModal" style="display:none; position:fixed; top:20%; left:25%; width:50%; background:#0b0f1a; border:2px solid #ff004c; border-radius:24px; padding:2rem; z-index:2000;">
+  <h3>Send Message to Admin</h3>
+  <textarea id="adminMsg" rows="4" placeholder="Describe your issue..."></textarea>
+  <button id="sendAdminMsg" class="btn-primary">Send</button>
+  <button id="closeAdminModal" class="btn">Cancel</button>
+</div>
+
   <!-- ORIGINAL SCRIPT – exactly preserved -->
   <script src="/js/common.js"></script>
   <script>
@@ -355,6 +364,24 @@
     loadThreads();
     document.getElementById('logoutBtn').addEventListener('click', logout);
     initTheme();
+
+    document.getElementById('contactAdminBtn')?.addEventListener('click', () => {
+  document.getElementById('adminContactModal').style.display = 'flex';
+});
+document.getElementById('closeAdminModal')?.addEventListener('click', () => {
+  document.getElementById('adminContactModal').style.display = 'none';
+});
+document.getElementById('sendAdminMsg')?.addEventListener('click', async () => {
+  const msg = document.getElementById('adminMsg').value;
+  if (!msg.trim()) return;
+  const adminUser = await (await fetchAuth('/admin/users')).json(); // get admin ID
+  const admin = adminUser.find(u => u.role === 'admin');
+  if (admin) {
+    await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: admin.id, text: `[CONTACT FORM] ${msg}` }) });
+    alert('Your message has been sent to the admin.');
+  }
+  document.getElementById('adminContactModal').style.display = 'none';
+});
   </script>
 </body>
 </html>

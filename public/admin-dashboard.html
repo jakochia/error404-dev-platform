@@ -2,215 +2,699 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>404 ADMIN | Control Center</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    .admin-layout { display: flex; min-height: 100vh; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(ellipse at 30% 40%, #0a0c18, #020408);
+      color: #eef5ff;
+      overflow-x: hidden;
+    }
+    body.light {
+      background: #f0f4fa;
+      color: #0f172a;
+    }
+    .app-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+    /* Sidebar */
     .sidebar {
       width: 280px;
-      background: rgba(5, 8, 15, 0.95);
-      backdrop-filter: blur(12px);
-      border-right: 1px solid #ff004c;
-      padding: 20px 0;
-      position: fixed;
-      height: 100vh;
-      overflow-y: auto;
-    }
-    .sidebar-header { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid #ff004c; margin-bottom: 20px; }
-    .sidebar-header h2 { color: #00f0ff; }
-    .sidebar-nav { list-style: none; padding: 0; }
-    .sidebar-nav li { margin: 8px 0; }
-    .sidebar-nav a {
+      background: rgba(8, 12, 22, 0.95);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(0, 240, 255, 0.25);
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 24px;
-      color: #c0c0ff;
-      text-decoration: none;
-      transition: 0.2s;
-      border-left: 3px solid transparent;
-    }
-    .sidebar-nav a:hover, .sidebar-nav a.active {
-      background: rgba(0, 240, 255, 0.1);
-      border-left-color: #00f0ff;
-      color: #00f0ff;
-    }
-    .main-content { margin-left: 280px; flex: 1; padding: 20px; }
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .stat-card { background: rgba(0,0,0,0.6); border-radius: 16px; padding: 20px; text-align: center; border: 1px solid #ff004c; }
-    .stat-card h3 { font-size: 2rem; color: #00f0ff; margin: 0; }
-    .section { display: none; animation: fadeIn 0.3s; }
-    .section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .data-table { width: 100%; border-collapse: collapse; }
-    .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
-    .btn-small { padding: 5px 10px; font-size: 0.8rem; margin: 2px; }
-    .logs-container { background: #0a0c14; height: 400px; overflow-y: auto; font-family: monospace; padding: 10px; border-radius: 8px; }
-    .log-entry { border-left: 3px solid #ff004c; margin: 8px 0; padding: 5px 10px; }
-    .glass-card { margin-bottom: 20px; }
-    .search-input { margin-bottom: 15px; padding: 8px; width: 300px; }
-    .modal {
-      display: none;
+      flex-direction: column;
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
       position: fixed;
       top: 0;
       left: 0;
+      bottom: 0;
+      z-index: 1200;
+      overflow-y: auto;
+    }
+    body.light .sidebar {
+      background: rgba(255, 255, 255, 0.95);
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .sidebar-header {
+      padding: 2rem 1.5rem;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      text-align: center;
+    }
+    .logo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(125deg, #00f0ff, #ff3b7c);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      font-weight: 500;
+      color: #ccdeee;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    body.light .sidebar-item { color: #1e293b; }
+    .sidebar-item i { width: 24px; font-size: 1.2rem; }
+    .sidebar-item:hover {
+      background: rgba(0, 240, 255, 0.12);
+      color: #00f0ff;
+      transform: translateX(6px);
+    }
+    .sidebar-item.active {
+      background: rgba(0, 240, 255, 0.2);
+      color: #00f0ff;
+      border-left: 3px solid #00f0ff;
+    }
+    .sidebar-footer {
+      padding: 1.5rem 1rem;
+      border-top: 1px solid rgba(0, 240, 255, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    /* Main content */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      transition: margin-left 0.3s;
+      min-height: 100vh;
+      background: rgba(5, 8, 16, 0.4);
+      display: flex;
+      flex-direction: column;
+    }
+    body.light .main-content { background: rgba(245, 248, 250, 0.6); }
+    /* Top bar */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      color: #00f0ff;
+      cursor: pointer;
+    }
+    .right-tools {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-left: auto;
+    }
+    .btn-icon {
+      background: rgba(0, 240, 255, 0.1);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      transition: 0.2s;
+    }
+    /* Container */
+    .container {
+      padding: 2rem;
+      max-width: 1400px;
+      flex: 1;
+    }
+    /* Cards */
+    .glass-card {
+      background: rgba(12, 18, 28, 0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 28px;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    body.light .glass-card { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.08); color: #0f172a; }
+    .glass-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 240, 255, 0.1);
+      border-color: rgba(0, 240, 255, 0.5);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: rgba(0,0,0,0.6);
+      border-radius: 24px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #ff004c;
+    }
+    body.light .stat-card { background: rgba(0,0,0,0.05); }
+    .stat-card h3 { font-size: 2rem; color: #00f0ff; margin: 0; }
+    .data-table { width: 100%; border-collapse: collapse; overflow-x: auto; display: block; }
+    .data-table th, .data-table td { padding: 12px; border-bottom: 1px solid #333; text-align: left; }
+    .btn-small { padding: 5px 10px; font-size: 0.8rem; margin: 2px; border-radius: 40px; cursor: pointer; }
+    .btn-primary, .btn {
+      background: linear-gradient(95deg, #0f2b5e, #c81e6b);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      transition: 0.2s;
+    }
+    .btn-primary:hover, .btn:hover { transform: scale(0.97); filter: brightness(1.1); }
+    input, textarea, select {
       width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-radius: 28px;
+      margin-bottom: 1rem;
+      color: inherit;
+    }
+    .section { display: none; animation: fadeIn 0.3s; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .logs-container {
+      background: #0a0c14;
+      height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      padding: 10px;
+      border-radius: 16px;
+    }
+    .log-entry { border-left: 3px solid #ff004c; margin: 8px 0; padding: 5px 10px; }
+    @media (max-width: 880px) {
+      .sidebar { transform: translateX(-100%); width: 260px; }
+      .sidebar.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .container { padding: 1rem; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .data-table { font-size: 0.8rem; }
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
       z-index: 2000;
       align-items: center;
       justify-content: center;
     }
     .modal-content {
       background: #0b0f1a;
-      border: 2px solid #ff004c;
-      border-radius: 24px;
-      padding: 30px;
+      border: 2px solid #ff3b7c;
+      border-radius: 32px;
+      padding: 2rem;
       text-align: center;
-      max-width: 400px;
+      max-width: 340px;
     }
-    .countdown-number { font-size: 4rem; color: #00f0ff; margin: 20px 0; }
+    .countdown-number { font-size: 3rem; font-weight: 800; color: #00f0ff; }
   </style>
 </head>
 <body>
-<div class="admin-layout">
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <h2>ERROR<span style="color:#ff004c">404</span></h2>
-      <small>ADMIN v5.0</small>
+<div class="app-wrapper">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header"><div class="logo">◢ 4Ø4_ADMIN</div></div>
+    <div class="sidebar-nav">
+      <div class="sidebar-item active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</div>
+      <div class="sidebar-item" data-section="users"><i class="fas fa-users"></i> Users</div>
+      <div class="sidebar-item" data-section="posts"><i class="fas fa-newspaper"></i> Posts & Blogs</div>
+      <div class="sidebar-item" data-section="memes"><i class="fas fa-laugh-squint"></i> Memes</div>
+      <div class="sidebar-item" data-section="comments"><i class="fas fa-comments"></i> Comments</div>
+      <div class="sidebar-item" data-section="reports"><i class="fas fa-bug"></i> Bug Reports</div>
+      <div class="sidebar-item" data-section="feedback"><i class="fas fa-comment-dots"></i> Feedback</div>
+      <div class="sidebar-item" data-section="groups"><i class="fas fa-users"></i> Groups</div>
+      <div class="sidebar-item" data-section="challenges"><i class="fas fa-puzzle-piece"></i> Debug Challenges</div>
+      <div class="sidebar-item" data-section="announcements"><i class="fas fa-bullhorn"></i> Announcements</div>
+      <div class="sidebar-item" data-section="logs"><i class="fas fa-history"></i> System Logs</div>
+      <div class="sidebar-item" data-section="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
+      <div class="sidebar-item" data-section="settings"><i class="fas fa-sliders-h"></i> Feature Toggles</div>
     </div>
-    <ul class="sidebar-nav">
-      <li><a href="#" data-section="dashboard">📊 Dashboard</a></li>
-      <li><a href="#" data-section="users">👥 Users</a></li>
-      <li><a href="#" data-section="posts">📝 Posts & Blogs</a></li>
-      <li><a href="#" data-section="memes">😂 Memes</a></li>
-      <li><a href="#" data-section="comments">💬 Comments</a></li>
-      <li><a href="#" data-section="reports">🐞 Bug Reports</a></li>
-      <li><a href="#" data-section="feedback">📢 Feedback</a></li>
-      <li><a href="#" data-section="groups">👥 Groups</a></li>
-      <li><a href="#" data-section="announcements">📢 Announcements</a></li>
-      <li><a href="#" data-section="logs">📜 System Logs</a></li>
-      <li><a href="#" data-section="analytics">📈 Analytics</a></li>
-      <li><a href="#" data-section="settings">⚙️ Feature Toggles</a></li>
-      <li><a href="#" id="logoutBtn">🚪 Logout</a></li>
-    </ul>
-  </div>
-
-  <div class="main-content">
-    <div id="dashboard" class="section active">
-      <h1>🛠️ Admin Dashboard</h1>
-      <div class="stat-grid" id="statGrid">Loading...</div>
-      <div class="glass-card"><h3>🔥 Recent Activity</h3><div id="recentActivity"></div></div>
+    <div class="sidebar-footer">
+      <div class="sidebar-item" id="themeSideBtn"><i class="fas fa-adjust"></i> Theme</div>
+      <div class="sidebar-item" id="logoutSideBtn"><i class="fas fa-sign-out-alt"></i> Logout</div>
     </div>
+  </aside>
 
-    <div id="users" class="section">
-      <h2>👥 User Management</h2>
-      <div class="glass-card">
-        <input type="text" id="searchUser" placeholder="Search users..." class="search-input">
-        <table class="data-table" id="usersTable"><thead><tr><th>Avatar</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>XP</th><th>Actions</th></tr></thead><tbody></tbody></table>
-      </div>
-      <div class="glass-card">
-        <h4>➕ Add New User</h4>
-        <form id="addUserForm"><input type="text" id="newUsername" placeholder="Username" required><input type="email" id="newEmail" placeholder="Email" required><input type="password" id="newPassword" placeholder="Password"><select id="newRole"><option>user</option><option>admin</option></select><button type="submit" class="btn">Create User</button></form>
+  <main class="main-content">
+    <div class="top-bar">
+      <button class="menu-toggle" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+      <div class="right-tools">
+        <button id="themeToggleTop" class="btn-icon"><i class="fas fa-moon"></i> Theme</button>
       </div>
     </div>
-
-    <div id="posts" class="section">
-      <h2>📝 All Posts (Pending/Approved)</h2>
-      <div id="postsList"></div>
-    </div>
-
-    <div id="memes" class="section">
-      <h2>😂 Meme Moderation</h2>
-      <div id="memesList"></div>
-    </div>
-
-    <div id="comments" class="section">
-      <h2>💬 Moderate Comments</h2>
-      <div id="commentsList"></div>
-    </div>
-
-    <div id="reports" class="section">
-      <h2>🐞 Bug Reports</h2>
-      <div id="reportsList"></div>
-    </div>
-
-    <div id="feedback" class="section">
-      <h2>📢 User Feedback</h2>
-      <div id="feedbackList"></div>
-    </div>
-
-    <div id="groups" class="section">
-      <h2>👥 Manage Groups</h2>
-      <div class="glass-card">
-        <h3>Create New Group</h3>
-        <input type="text" id="groupName" placeholder="Group Name" style="width:100%">
-        <select id="groupGenderType" style="width:100%; margin:10px 0; padding:8px;">
-          <option value="boys">Boys Only</option>
-          <option value="girls">Girls Only</option>
-          <option value="mixed">Mixed</option>
-          <option value="all">All Users</option>
-        </select>
-        <button id="createGroupBtn" class="btn">Create Group</button>
-        <div id="groupCreateMsg"></div>
+    <div class="container">
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="section active">
+        <h1>🛠️ Admin Dashboard</h1>
+        <div class="stat-grid" id="statGrid">Loading...</div>
+        <div class="glass-card"><h3>🔥 Recent Activity</h3><div id="recentActivity"></div></div>
       </div>
-      <div class="glass-card">
-        <h3>All Groups & Members</h3>
-        <div id="groupsList"></div>
+
+      <!-- USERS -->
+      <div id="users" class="section">
+        <h2>👥 User Management</h2>
+        <div class="glass-card"><input type="text" id="searchUser" placeholder="Search users..." class="search-input"><div style="overflow-x:auto;"><table class="data-table" id="usersTable"><thead><tr><th>Avatar</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>XP</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div>
+        <div class="glass-card"><h4>➕ Add New User</h4><form id="addUserForm"><input type="text" id="newUsername" placeholder="Username"><input type="email" id="newEmail" placeholder="Email"><input type="password" id="newPassword" placeholder="Password"><select id="newRole"><option>user</option><option>admin</option></select><button type="submit" class="btn">Create User</button></form></div>
       </div>
-    </div>
 
-    <div id="announcements" class="section">
-      <h2>📢 Announcements</h2>
-      <div class="glass-card">
-        <h3>Create New Announcement</h3>
-        <input type="text" id="announcementTitle" placeholder="Title" style="width:100%">
-        <textarea id="announcementContent" rows="4" placeholder="Announcement content..."></textarea>
-        <select id="announcementPriority" style="padding:8px; margin:8px 0;">
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <button id="createAnnouncementBtn" class="btn">Post Announcement</button>
+      <!-- POSTS -->
+      <div id="posts" class="section"><h2>📝 All Posts</h2><div id="postsList"></div></div>
+      <!-- MEMES -->
+      <div id="memes" class="section"><h2>😂 Meme Moderation</h2><div id="memesList"></div></div>
+      <!-- COMMENTS -->
+      <div id="comments" class="section"><h2>💬 Comments</h2><div id="commentsList"></div></div>
+      <!-- REPORTS -->
+      <div id="reports" class="section"><h2>🐞 Bug Reports</h2><div id="reportsList"></div></div>
+      <!-- FEEDBACK -->
+      <div id="feedback" class="section"><h2>📢 User Feedback</h2><div id="feedbackList"></div></div>
+      <!-- GROUPS (admin) -->
+      <div id="groups" class="section">
+        <h2>👥 Manage Groups</h2>
+        <div class="glass-card"><h3>Create New Group</h3><input type="text" id="groupName" placeholder="Group Name"><select id="groupGenderType"><option value="boys">Boys Only</option><option value="girls">Girls Only</option><option value="mixed">Mixed</option><option value="all">All Users</option></select><button id="createGroupBtn" class="btn">Create Group</button><div id="groupCreateMsg"></div></div>
+        <div class="glass-card"><h3>All Groups & Members</h3><div id="groupsList"></div></div>
       </div>
-      <div class="glass-card">
-        <h3>All Announcements</h3>
-        <div id="announcementsList"></div>
+      <!-- DEBUG CHALLENGES (admin create) -->
+      <div id="challenges" class="section">
+        <h2>🧩 Debug Challenges</h2>
+        <div class="glass-card"><h3>Create New Challenge</h3><input type="text" id="newChallengeTitle" placeholder="Title"><textarea id="newChallengeCode" rows="5" placeholder="Broken code..."></textarea><input type="text" id="newChallengeSolution" placeholder="Solution (exact match)"><select id="newChallengeDifficulty"><option>easy</option><option>medium</option><option>hard</option></select><input type="number" id="newChallengeXP" placeholder="XP Reward" value="50"><button id="createChallengeBtn" class="btn">Create Challenge</button><div id="challengeMsg"></div></div>
+        <div class="glass-card"><h3>Existing Challenges</h3><div id="challengesList"></div></div>
       </div>
+      <!-- ANNOUNCEMENTS (admin create) -->
+      <div id="announcements" class="section">
+        <h2>📢 Announcements</h2>
+        <div class="glass-card"><h3>Create New Announcement</h3><input type="text" id="announcementTitle" placeholder="Title"><textarea id="announcementContent" rows="4" placeholder="Content..."></textarea><select id="announcementPriority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><button id="createAnnouncementBtn" class="btn">Post Announcement</button></div>
+        <div class="glass-card"><h3>All Announcements</h3><div id="announcementsList"></div></div>
+      </div>
+      <!-- LOGS -->
+      <div id="logs" class="section"><h2>📜 System Logs</h2><div class="logs-container" id="logsContainer">Loading...</div></div>
+      <!-- ANALYTICS -->
+      <div id="analytics" class="section"><h2>📈 Analytics</h2><div class="glass-card"><canvas id="trendChart" width="400" height="200" style="max-width:100%; background:#0a0c14; border-radius:16px;"></canvas></div><div class="glass-card"><h3>🏆 Top Users by XP</h3><div id="topUsers"></div></div></div>
+      <!-- SETTINGS -->
+      <div id="settings" class="section"><h2>⚙️ Feature Toggles</h2><div class="glass-card"><label><input type="checkbox" id="toggleBlogFeature"> Enable Blog System</label><br><label><input type="checkbox" id="toggleMemesFeature"> Enable Meme Zone</label><br><label><input type="checkbox" id="toggleChallengesFeature"> Enable Debug Arena</label><br><button id="saveFeaturesBtn" class="btn">Save Changes</button></div></div>
     </div>
-
-    <div id="logs" class="section">
-      <h2>📜 System Logs</h2>
-      <div class="logs-container" id="logsContainer">Loading...</div>
-    </div>
-
-    <div id="analytics" class="section">
-      <h2>📈 Analytics</h2>
-      <div class="glass-card"><canvas id="trendChart" width="400" height="200" style="max-width:100%; background:#0a0c14;"></canvas></div>
-      <div class="glass-card"><h3>🏆 Top Users by XP</h3><div id="topUsers"></div></div>
-    </div>
-
-    <div id="settings" class="section">
-      <h2>⚙️ Feature Toggles</h2>
-      <div class="glass-card"><label><input type="checkbox" id="toggleBlogFeature"> Enable Blog System</label><br><label><input type="checkbox" id="toggleMemesFeature"> Enable Meme Zone</label><br><label><input type="checkbox" id="toggleChallengesFeature"> Enable Debug Arena</label><br><button id="saveFeaturesBtn" class="btn">Save Changes</button></div>
-    </div>
-  </div>
+  </main>
 </div>
 
-<!-- Logout Countdown Modal -->
-<div id="logoutModal" class="modal">
-  <div class="modal-content">
-    <h2 style="color:#ff004c">👋 Welcome Next Time!</h2>
-    <p>Logging out in</p>
-    <div class="countdown-number" id="countdownNumber">3</div>
-    <p>See you soon, Admin.</p>
-  </div>
-</div>
+<!-- LOGOUT MODAL -->
+<div id="logoutModal" class="modal"><div class="modal-content"><h2>👋 Goodbye, Admin</h2><p>Logging out in</p><div class="countdown-number" id="countdownNumber">3</div><p>See you soon</p></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/js/common.js"></script>
-<script src="/js/admin.js"></script>
+<script>
+  // ========== SIDEBAR TOGGLE ==========
+  const sidebar = document.getElementById('sidebar');
+  const menuToggle = document.getElementById('menuToggleBtn');
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 880 && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) sidebar.classList.remove('open');
+    });
+  }
+  const sidebarItems = document.querySelectorAll('.sidebar-item[data-section]');
+  function activateSection(sectionId) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+    sidebarItems.forEach(item => {
+      if (item.dataset.section === sectionId) item.classList.add('active');
+      else item.classList.remove('active');
+    });
+    if (window.innerWidth <= 880) sidebar.classList.remove('open');
+  }
+  sidebarItems.forEach(item => {
+    item.addEventListener('click', (e) => { e.preventDefault(); const sec = item.dataset.section; if (sec) activateSection(sec); });
+  });
+
+  // ========== THEME ==========
+  function setTheme(isLight) {
+    if (isLight) document.body.classList.add('light');
+    else document.body.classList.remove('light');
+    localStorage.setItem('adminTheme', isLight ? 'light' : 'dark');
+  }
+  function initTheme() {
+    const stored = localStorage.getItem('adminTheme');
+    setTheme(stored === 'light');
+    document.getElementById('themeToggleTop')?.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
+    document.getElementById('themeSideBtn')?.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
+  }
+  initTheme();
+
+  // ========== LOGOUT COUNTDOWN ==========
+  function showLogoutCountdown() {
+    const modal = document.getElementById('logoutModal');
+    const countdownSpan = document.getElementById('countdownNumber');
+    let count = 3;
+    modal.style.display = 'flex';
+    countdownSpan.innerText = count;
+    const interval = setInterval(() => {
+      count--;
+      countdownSpan.innerText = count;
+      if (count <= 0) {
+        clearInterval(interval);
+        modal.style.display = 'none';
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+      }
+    }, 1000);
+  }
+  document.getElementById('logoutSideBtn')?.addEventListener('click', showLogoutCountdown);
+
+  // ========== FETCH AUTH ==========
+  async function fetchAuth(url, options = {}) {
+    const token = localStorage.getItem('token');
+    if (!token) { window.location.href = '/login.html'; return; }
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch('/api' + url, { ...options, headers });
+    if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+    return res;
+  }
+
+  // ========== DASHBOARD STATS ==========
+  async function loadDashboardStats() {
+    const res = await fetchAuth('/admin/stats');
+    const stats = await res.json();
+    document.getElementById('statGrid').innerHTML = `
+      <div class="stat-card"><h3>${stats.totalUsers}</h3><p>Total Users</p></div>
+      <div class="stat-card"><h3>${stats.activeUsers}</h3><p>Active Users</p></div>
+      <div class="stat-card"><h3>${stats.totalPosts}</h3><p>Total Posts</p></div>
+      <div class="stat-card"><h3>${stats.pendingPosts}</h3><p>Pending Approval</p></div>
+      <div class="stat-card"><h3>${stats.totalMemes}</h3><p>Memes</p></div>
+      <div class="stat-card"><h3>${stats.openReports}</h3><p>Open Reports</p></div>
+    `;
+    const logsRes = await fetchAuth('/admin/logs');
+    const logs = await logsRes.json();
+    const recent = logs.slice(-5).reverse();
+    document.getElementById('recentActivity').innerHTML = recent.map(log => `<div class="log-entry">[${new Date(log.timestamp).toLocaleString()}] ${log.action} - ${log.details}</div>`).join('');
+  }
+
+  // ========== USERS ==========
+  let allUsers = [];
+  async function loadUsers() {
+    const res = await fetchAuth('/admin/users');
+    allUsers = await res.json();
+    renderUsers(allUsers);
+  }
+  function renderUsers(users) {
+    const tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = '';
+    users.forEach(user => {
+      const row = tbody.insertRow();
+      row.insertCell(0).innerHTML = `<img src="${user.profilePic || '/uploads/profiles/default.png'}" width="32" style="border-radius:50%">`;
+      row.insertCell(1).innerText = user.username;
+      row.insertCell(2).innerText = user.email;
+      row.insertCell(3).innerHTML = `<select class="role-select" data-id="${user.id}"><option ${user.role==='user'?'selected':''}>user</option><option ${user.role==='admin'?'selected':''}>admin</option></select>`;
+      row.insertCell(4).innerHTML = `<span>${user.banned ? '🚫 Banned' : '✅ Active'}</span> <button class="btn-small ban-user" data-id="${user.id}">${user.banned ? 'Unban' : 'Ban'}</button>`;
+      row.insertCell(5).innerText = user.xp;
+      row.insertCell(6).innerHTML = `<button class="btn-small delete-user" data-id="${user.id}">🗑️ Delete</button>`;
+    });
+    document.querySelectorAll('.ban-user').forEach(btn => btn.addEventListener('click', () => toggleBan(btn.dataset.id)));
+    document.querySelectorAll('.role-select').forEach(sel => sel.addEventListener('change', () => changeRole(sel.dataset.id, sel.value)));
+    document.querySelectorAll('.delete-user').forEach(btn => btn.addEventListener('click', () => deleteUser(btn.dataset.id)));
+  }
+  document.getElementById('searchUser')?.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const filtered = allUsers.filter(u => u.username.toLowerCase().includes(term) || u.email.toLowerCase().includes(term));
+    renderUsers(filtered);
+  });
+  async function toggleBan(userId) { await fetchAuth(`/admin/users/${userId}/ban`, { method: 'PUT' }); loadUsers(); }
+  async function changeRole(userId, role) { await fetchAuth(`/admin/users/${userId}/role`, { method: 'PUT', body: JSON.stringify({ role }) }); loadUsers(); }
+  async function deleteUser(userId) { if (confirm('Delete user permanently?')) { await fetchAuth(`/admin/users/${userId}`, { method: 'DELETE' }); loadUsers(); } }
+  document.getElementById('addUserForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('newUsername').value;
+    const email = document.getElementById('newEmail').value;
+    const password = document.getElementById('newPassword').value;
+    const role = document.getElementById('newRole').value;
+    await fetchAuth('/admin/users', { method: 'POST', body: JSON.stringify({ username, email, password, role }) });
+    loadUsers();
+    e.target.reset();
+  });
+
+  // ========== POSTS ==========
+  async function loadAllPosts() {
+    const res = await fetchAuth('/posts/all');
+    const posts = await res.json();
+    const container = document.getElementById('postsList');
+    container.innerHTML = '';
+    posts.forEach(p => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<h3>${escapeHtml(p.title)}</h3><p>by ${p.authorName} | ${p.category} | ${p.approved ? '✅ Approved' : '⏳ Pending'}</p><p>${escapeHtml(p.content.substring(0,150))}...</p>${!p.approved ? `<button class="btn-small approve-post" data-id="${p.id}">Approve</button>` : ''}<button class="btn-small delete-post" data-id="${p.id}">Delete</button>`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.approve-post').forEach(btn => btn.addEventListener('click', async () => { await fetchAuth(`/admin/posts/${btn.dataset.id}/approve`, { method: 'PUT' }); loadAllPosts(); }));
+    document.querySelectorAll('.delete-post').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete post?')) { await fetchAuth(`/posts/${btn.dataset.id}`, { method: 'DELETE' }); loadAllPosts(); } }));
+  }
+
+  // ========== MEMES ==========
+  async function loadAllMemes() {
+    const res = await fetchAuth('/memes');
+    const memes = await res.json();
+    const container = document.getElementById('memesList');
+    container.innerHTML = '';
+    memes.forEach(m => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<img src="${m.url}" width="150" style="border-radius:8px"><p><strong>${escapeHtml(m.title)}</strong> by ${m.authorName}</p><button class="btn-small delete-meme" data-id="${m.id}">Delete</button>`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.delete-meme').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete meme?')) { await fetchAuth(`/admin/memes/${btn.dataset.id}`, { method: 'DELETE' }); loadAllMemes(); } }));
+  }
+
+  // ========== COMMENTS ==========
+  async function loadAllComments() {
+    const res = await fetchAuth('/comments/all');
+    const comments = await res.json();
+    const container = document.getElementById('commentsList');
+    container.innerHTML = '';
+    comments.forEach(c => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<p><strong>${c.authorName}</strong> on "${c.postTitle}": ${escapeHtml(c.text)}</p><button class="btn-small delete-comment" data-id="${c.id}">Delete</button>`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.delete-comment').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete comment?')) { await fetchAuth(`/admin/comments/${btn.dataset.id}`, { method: 'DELETE' }); loadAllComments(); } }));
+  }
+
+  // ========== REPORTS ==========
+  async function loadReports() {
+    const res = await fetchAuth('/reports');
+    const reports = await res.json();
+    const container = document.getElementById('reportsList');
+    container.innerHTML = '';
+    reports.forEach(r => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<h4>${escapeHtml(r.title)}</h4><p>From: ${r.authorName} | Status: ${r.status}</p><p>${escapeHtml(r.description)}</p>${r.status === 'pending' ? `<button class="btn-small resolve-report" data-id="${r.id}">Mark Resolved</button>` : ''}`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.resolve-report').forEach(btn => btn.addEventListener('click', async () => { await fetchAuth(`/admin/reports/${btn.dataset.id}/resolve`, { method: 'PUT' }); loadReports(); }));
+  }
+
+  // ========== FEEDBACK ==========
+  async function loadFeedback() {
+    const res = await fetchAuth('/admin/feedback');
+    const feedbacks = await res.json();
+    const container = document.getElementById('feedbackList');
+    container.innerHTML = '';
+    feedbacks.forEach(f => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<p><strong>${f.username}</strong> (Rating: ${f.rating}/5)</p><p>${escapeHtml(f.message)}</p>${f.adminReply ? `<p><em>Admin reply: ${escapeHtml(f.adminReply)}</em></p>` : `<textarea id="reply-${f.id}" placeholder="Reply..."></textarea><button class="btn-small reply-feedback" data-id="${f.id}">Reply</button>`}<small>Status: ${f.status}</small>`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.reply-feedback').forEach(btn => btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const reply = document.getElementById(`reply-${id}`).value;
+      if (!reply) return;
+      await fetchAuth(`/admin/feedback/${id}/reply`, { method: 'PUT', body: JSON.stringify({ reply }) });
+      loadFeedback();
+    }));
+  }
+
+  // ========== GROUPS (ADMIN) ==========
+  async function loadGroups() {
+    const res = await fetchAuth('/admin/groups');
+    const groups = await res.json();
+    const usersRes = await fetchAuth('/admin/users');
+    const users = await usersRes.json();
+    const container = document.getElementById('groupsList');
+    container.innerHTML = '';
+    for (const g of groups) {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<strong>${escapeHtml(g.name)}</strong> (${g.genderType})<br>Members: ${g.members.map(m => users.find(u=>u.id===m)?.username || m).join(', ') || 'None'}<br><select id="member-select-${g.id}"><option value="">-- Add member --</option>${users.filter(u => !g.members.includes(u.id) && u.role !== 'admin').map(u => `<option value="${u.id}">${escapeHtml(u.username)}</option>`).join('')}</select><button class="btn-small add-member" data-group="${g.id}">Add</button><hr><small>Created: ${new Date(g.createdAt).toLocaleDateString()}</small>`;
+      container.appendChild(div);
+    }
+    document.querySelectorAll('.add-member').forEach(btn => btn.addEventListener('click', async () => {
+      const groupId = btn.dataset.group;
+      const memberId = document.getElementById(`member-select-${groupId}`).value;
+      if(!memberId) return;
+      await fetchAuth(`/admin/groups/${groupId}/add-members`, { method: 'POST', body: JSON.stringify({ memberIds: [memberId] }) });
+      loadGroups();
+    }));
+  }
+  document.getElementById('createGroupBtn')?.addEventListener('click', async () => {
+    const name = document.getElementById('groupName').value;
+    const genderType = document.getElementById('groupGenderType').value;
+    if(!name) return alert('Group name required');
+    await fetchAuth('/admin/groups', { method: 'POST', body: JSON.stringify({ name, genderType }) });
+    document.getElementById('groupName').value = '';
+    loadGroups();
+  });
+
+  // ========== DEBUG CHALLENGES (admin create) ==========
+  async function loadChallengesList() {
+    const res = await fetchAuth('/challenges');
+    const challenges = await res.json();
+    const container = document.getElementById('challengesList');
+    container.innerHTML = '';
+    challenges.forEach(ch => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<strong>${escapeHtml(ch.title)}</strong> (${ch.difficulty}) - ${ch.xpReward} XP<br><pre>${escapeHtml(ch.brokenCode.substring(0,100))}...</pre><button class="btn-small delete-challenge" data-id="${ch.id}">Delete</button>`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.delete-challenge').forEach(btn => btn.addEventListener('click', async () => {
+      if(confirm('Delete this challenge?')) {
+        await fetchAuth(`/admin/challenges/${btn.dataset.id}`, { method: 'DELETE' });
+        loadChallengesList();
+      }
+    }));
+  }
+  document.getElementById('createChallengeBtn')?.addEventListener('click', async () => {
+    const title = document.getElementById('newChallengeTitle').value;
+    const brokenCode = document.getElementById('newChallengeCode').value;
+    const solution = document.getElementById('newChallengeSolution').value;
+    const difficulty = document.getElementById('newChallengeDifficulty').value;
+    const xpReward = parseInt(document.getElementById('newChallengeXP').value);
+    if(!title || !brokenCode || !solution) return alert('All fields required');
+    const res = await fetchAuth('/admin/challenges', { method: 'POST', body: JSON.stringify({ title, brokenCode, solution, difficulty, xpReward }) });
+    if(res.ok) {
+      alert('Challenge created');
+      document.getElementById('newChallengeTitle').value = '';
+      document.getElementById('newChallengeCode').value = '';
+      document.getElementById('newChallengeSolution').value = '';
+      loadChallengesList();
+    } else alert('Failed');
+  });
+
+  // ========== ANNOUNCEMENTS ==========
+  async function loadAnnouncements() {
+    const res = await fetchAuth('/announcements');
+    const announcements = await res.json();
+    const container = document.getElementById('announcementsList');
+    container.innerHTML = '';
+    announcements.forEach(a => {
+      const div = document.createElement('div'); div.className = 'glass-card';
+      div.innerHTML = `<h3>${escapeHtml(a.title)}</h3><p>${escapeHtml(a.content)}</p><small>Priority: ${a.priority} | ${new Date(a.createdAt).toLocaleString()}</small><button class="btn-small delete-announcement" data-id="${a.id}">Delete</button>`;
+      container.appendChild(div);
+    });
+    document.querySelectorAll('.delete-announcement').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete announcement?')) { await fetchAuth(`/admin/announcements/${btn.dataset.id}`, { method: 'DELETE' }); loadAnnouncements(); } }));
+  }
+  document.getElementById('createAnnouncementBtn')?.addEventListener('click', async () => {
+    const title = document.getElementById('announcementTitle').value;
+    const content = document.getElementById('announcementContent').value;
+    const priority = document.getElementById('announcementPriority').value;
+    if(!title || !content) return alert('Title and content required');
+    await fetchAuth('/admin/announcements', { method: 'POST', body: JSON.stringify({ title, content, priority }) });
+    document.getElementById('announcementTitle').value = '';
+    document.getElementById('announcementContent').value = '';
+    loadAnnouncements();
+  });
+
+  // ========== LOGS ==========
+  async function loadSystemLogs() {
+    const res = await fetchAuth('/admin/logs');
+    const logs = await res.json();
+    const container = document.getElementById('logsContainer');
+    container.innerHTML = logs.reverse().map(log => `<div class="log-entry"><strong>[${new Date(log.timestamp).toLocaleString()}]</strong> ${log.action} — ${log.details}</div>`).join('');
+  }
+
+  // ========== ANALYTICS ==========
+  let chart = null;
+  async function loadAnalytics() {
+    const postsRes = await fetchAuth('/posts/all');
+    const posts = await postsRes.json();
+    const postsByDate = {};
+    posts.forEach(p => { const date = new Date(p.createdAt).toLocaleDateString(); postsByDate[date] = (postsByDate[date] || 0) + 1; });
+    const labels = Object.keys(postsByDate).slice(-7);
+    const data = labels.map(l => postsByDate[l]);
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: 'Posts Created', data, borderColor: '#00f0ff', backgroundColor: 'rgba(0,240,255,0.1)' }] } });
+    const usersRes = await fetchAuth('/admin/users');
+    const users = await usersRes.json();
+    const topUsers = users.sort((a,b)=>b.xp - a.xp).slice(0,5);
+    document.getElementById('topUsers').innerHTML = topUsers.map(u => `<p>${u.username} - ${u.xp} XP</p>`).join('');
+  }
+
+  // ========== FEATURE TOGGLES ==========
+  async function loadFeatureToggles() {
+    const res = await fetchAuth('/admin/config');
+    const config = await res.json();
+    document.getElementById('toggleBlogFeature').checked = config.blogEnabled;
+    document.getElementById('toggleMemesFeature').checked = config.memesEnabled;
+    document.getElementById('toggleChallengesFeature').checked = config.challengesEnabled;
+  }
+  document.getElementById('saveFeaturesBtn')?.addEventListener('click', async () => {
+    const payload = {
+      blogEnabled: document.getElementById('toggleBlogFeature').checked,
+      memesEnabled: document.getElementById('toggleMemesFeature').checked,
+      challengesEnabled: document.getElementById('toggleChallengesFeature').checked
+    };
+    await fetchAuth('/admin/config', { method: 'PUT', body: JSON.stringify(payload) });
+    alert('Features updated');
+  });
+
+  // ========== UTILITIES ==========
+  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=> m==='&'?'&amp;': m==='<'?'&lt;':'&gt;'); }
+
+  // ========== INITIAL LOAD ==========
+  (async () => {
+    await loadDashboardStats();
+    await loadUsers();
+    await loadAllPosts();
+    await loadAllMemes();
+    await loadAllComments();
+    await loadReports();
+    await loadFeedback();
+    await loadGroups();
+    await loadChallengesList();
+    await loadAnnouncements();
+    await loadSystemLogs();
+    await loadAnalytics();
+    await loadFeatureToggles();
+  })();
+</script>
 </body>
 </html>

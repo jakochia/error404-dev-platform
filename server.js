@@ -934,6 +934,50 @@ app.get('/api/user/analytics', auth, async (req, res) => {
   res.json({ postsCreated: user.postsCreated, bugsFixed: user.bugsFixed, likesReceived: totalLikes, xp: user.xp, level: user.level });
 });
 
+// ========== ADMIN CREATE CHALLENGES ==========
+app.post('/api/admin/challenges', auth, async (req, res) => {
+  if (req.role !== 'admin') return res.status(403);
+  const { title, brokenCode, solution, difficulty, xpReward } = req.body;
+  const newChallenge = {
+    id: uuidv4(),
+    title,
+    brokenCode,
+    solution,
+    difficulty: difficulty || 'medium',
+    xpReward: xpReward || 50,
+  };
+  await Challenge.create(newChallenge);
+  res.json(newChallenge);
+});
+
+// ========== USER CHALLENGE PROGRESS (track solved status) ==========
+// Add to userSchema:  completedChallenges: [String] (store challenge ids)
+// And lastChallengeReset: Date (to know when they finished all)
+// Already in MongoDB? We'll update User model:
+// Add these fields to userSchema:
+//   completedChallenges: { type: [String], default: [] },
+//   allChallengesCompletedAt: { type: Date, default: null },
+// Then modify /api/challenges/submit to check date and block.
+
+// First, modify the userSchema (add fields):
+// Add after twoFAEnabled:
+//   completedChallenges: { type: [String], default: [] },
+//   allChallengesCompletedAt: { type: Date, default: null },
+
+// Then modify /api/challenges/submit:
+// After user finds, check if user.allChallengesCompletedAt is not null and it's still the same week (Sunday reset)
+// If yes, return { correct: false, message: "You've already completed all challenges this week. New challenges arrive Sunday!" }
+
+// Also modify /api/challenges to return only challenges not yet solved by user (or all but mark solved)
+// For simplicity, return all challenges; frontend will filter based on user's completedChallenges.
+
+// Add endpoint to get user progress:
+app.get('/api/user/challenge-progress', auth, async (req, res) => {
+  const user = await User.findOne({ id: req.userId });
+  if (!user) return res.status(404);
+  res.json({ completed: user.completedChallenges || [], completedAll: user.allChallengesCompletedAt ? new Date(user.allChallengesCompletedAt) : null });
+});
+
 // ========== SERVE STATIC PAGES ==========
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
