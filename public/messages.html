@@ -34,14 +34,14 @@
   <h1>💬 Messages & Groups</h1>
   <div class="chat-layout">
     <div class="sidebar-chat glass-card">
-      <h3>👥 Your Groups</h3>
+      <h3>👥 Your Groups <button class="refresh-btn" id="refreshGroups" style="background:none; border:1px solid #00f0ff; border-radius:20px; padding:2px 8px;">↻</button></h3>
       <div id="groupsList">Loading groups...</div>
       <hr>
-      <h3>🟢 Online Users</h3>
-      <div id="onlineUsersList"></div>
+      <h3>🟢 Online Users <button class="refresh-btn" id="refreshOnline" style="background:none; border:1px solid #00f0ff; border-radius:20px; padding:2px 8px;">↻</button></h3>
+      <div id="onlineUsersList">Loading online users...</div>
       <hr>
-      <h3>📩 Direct Conversations</h3>
-      <div id="convList"></div>
+      <h3>📩 Direct Conversations <button class="refresh-btn" id="refreshConvs" style="background:none; border:1px solid #00f0ff; border-radius:20px; padding:2px 8px;">↻</button></h3>
+      <div id="convList">Loading conversations...</div>
     </div>
     <div class="chat-area glass-card">
       <h3 id="chatHeader">Select a conversation</h3>
@@ -51,15 +51,12 @@
     </div>
   </div>
 </div>
-<script src="/js/common.js"></script>
 <script>
-  let currentChatType = null; // 'user' or 'group'
-  let currentChatId = null;
-  let currentChatName = null;
-  let allUsers = [];
-
+  // ========== AUTH FETCH ==========
+  function getToken() { return localStorage.getItem('token'); }
+  
   async function fetchAuth(url, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) { window.location.href = '/login.html'; return; }
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -68,120 +65,204 @@
     return res;
   }
 
+  // ========== GLOBAL VARIABLES ==========
+  let currentChatType = null;
+  let currentChatId = null;
+  let currentChatName = null;
+  let allUsers = [];      // filled from /api/users
+  let currentUserId = null;
+
+  async function getCurrentUserId() {
+    if (currentUserId) return currentUserId;
+    const res = await fetchAuth('/user/profile');
+    if (res && res.ok) {
+      const user = await res.json();
+      currentUserId = user.id;
+      return currentUserId;
+    }
+    return null;
+  }
+
+  // Load all users (id & username) for display
   async function loadUsers() {
-    const res = await fetchAuth('/admin/users');
-    allUsers = await res.json();
+    try {
+      const res = await fetchAuth('/users');
+      if (res && res.ok) allUsers = await res.json();
+      else console.warn('Failed to load user list');
+    } catch (err) {
+      console.error('Error loading users:', err);
+    }
   }
 
+  // Load groups the user belongs to
   async function loadGroups() {
-    const res = await fetchAuth('/groups');
-    const groups = await res.json();
-    const div = document.getElementById('groupsList');
-    if (!div) return;
-    if (groups.length === 0) {
-      div.innerHTML = '<p>You are not in any group yet.</p>';
-      return;
+    const container = document.getElementById('groupsList');
+    container.innerHTML = 'Loading groups...';
+    try {
+      const res = await fetchAuth('/groups');
+      if (!res) throw new Error('No response');
+      const groups = await res.json();
+      console.log('Groups:', groups);
+      if (!groups || groups.length === 0) {
+        container.innerHTML = '<p>You are not in any group yet.</p>';
+        return;
+      }
+      container.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${escapeHtml(g.name)}')">👥 ${escapeHtml(g.name)}</div>`).join('');
+    } catch (err) {
+      console.error('Load groups error:', err);
+      container.innerHTML = '<p>Error loading groups.</p>';
     }
-    div.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${escapeHtml(g.name)}')">👥 ${escapeHtml(g.name)}</div>`).join('');
   }
 
+  // Load online users
   async function loadOnlineUsers() {
-    const res = await fetchAuth('/online-users');
-    const onlineUsers = await res.json();
     const container = document.getElementById('onlineUsersList');
-    container.innerHTML = onlineUsers.map(u => `<div class="user-item" onclick="startDM('${u.id}', '${escapeHtml(u.username)}')">${escapeHtml(u.username)}<span class="online-dot"></span></div>`).join('');
-  }
-
-  async function loadConversations() {
-    const res = await fetchAuth('/conversations');
-    const convs = await res.json();
-    const div = document.getElementById('convList');
-    if (!div) return;
-    if (convs.length === 0) {
-      div.innerHTML = '<p>No direct messages yet.</p>';
-      return;
+    container.innerHTML = 'Loading online users...';
+    try {
+      const res = await fetchAuth('/online-users');
+      if (!res) throw new Error('No response');
+      const online = await res.json();
+      console.log('Online users:', online);
+      if (!online || online.length === 0) {
+        container.innerHTML = '<p>No one online</p>';
+      } else {
+        container.innerHTML = online.map(u => `<div class="user-item" onclick="startDM('${u.id}', '${escapeHtml(u.username)}')">${escapeHtml(u.username)}<span class="online-dot"></span></div>`).join('');
+      }
+    } catch (err) {
+      console.error('Load online users error:', err);
+      container.innerHTML = '<p>Error loading online users.</p>';
     }
-    div.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${escapeHtml(c.otherName)}')"><strong>${escapeHtml(c.otherName)}</strong><br><small>${escapeHtml(c.lastMsg)}</small></div>`).join('');
   }
 
+  // Load direct conversations
+  async function loadConversations() {
+    const container = document.getElementById('convList');
+    container.innerHTML = 'Loading conversations...';
+    try {
+      const res = await fetchAuth('/conversations');
+      if (!res) throw new Error('No response');
+      const convs = await res.json();
+      console.log('Conversations:', convs);
+      if (!convs || convs.length === 0) {
+        container.innerHTML = '<p>No direct messages yet.</p>';
+        return;
+      }
+      container.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${escapeHtml(c.otherName)}')"><strong>${escapeHtml(c.otherName)}</strong><br><small>${escapeHtml(c.lastMsg)}</small></div>`).join('');
+    } catch (err) {
+      console.error('Load conversations error:', err);
+      container.innerHTML = '<p>Error loading conversations.</p>';
+    }
+  }
+
+  // Open a direct message conversation
   window.startDM = async function(otherId, name) {
     currentChatType = 'user';
     currentChatId = otherId;
     currentChatName = name;
     document.getElementById('chatHeader').innerText = `Chat with ${name}`;
-    const res = await fetchAuth(`/messages/${otherId}`);
-    const msgs = await res.json();
-    const container = document.getElementById('chatMessages');
-    container.innerHTML = '';
-    for (const m of msgs) {
-      const isFromMe = m.from === (await getMyId());
-      const div = document.createElement('div');
-      div.className = isFromMe ? 'message-right' : 'message-left';
-      div.innerHTML = `<div class="message-bubble"><strong>${isFromMe ? 'You' : name}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
-      container.appendChild(div);
+    try {
+      const res = await fetchAuth(`/messages/${otherId}`);
+      if (!res) throw new Error('No response');
+      const msgs = await res.json();
+      const container = document.getElementById('chatMessages');
+      const myId = await getCurrentUserId();
+      container.innerHTML = '';
+      for (const m of msgs) {
+        const isFromMe = m.from === myId;
+        const div = document.createElement('div');
+        div.className = isFromMe ? 'message-right' : 'message-left';
+        div.innerHTML = `<div class="message-bubble"><strong>${isFromMe ? 'You' : name}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
+        container.appendChild(div);
+      }
+      container.scrollTop = container.scrollHeight;
+    } catch (err) {
+      console.error('Open DM error:', err);
+      document.getElementById('chatMessages').innerHTML = '<p>Error loading messages.</p>';
     }
-    container.scrollTop = container.scrollHeight;
   };
 
+  // Open a group conversation
   window.openGroup = async function(groupId, name) {
     currentChatType = 'group';
     currentChatId = groupId;
     currentChatName = name;
     document.getElementById('chatHeader').innerText = `Group: ${name}`;
-    // Fetch group messages
-    const res = await fetchAuth(`/groups/${groupId}/messages`);
-    const msgs = await res.json();
-    const container = document.getElementById('chatMessages');
-    container.innerHTML = '';
-    for (const m of msgs) {
-      const sender = allUsers.find(u => u.id === m.from)?.username || m.from;
-      const div = document.createElement('div');
-      div.className = 'message-left';
-      div.innerHTML = `<div class="message-bubble"><strong>${escapeHtml(sender)}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
-      container.appendChild(div);
+    try {
+      const res = await fetchAuth(`/groups/${groupId}/messages`);
+      if (!res) throw new Error('No response');
+      const msgs = await res.json();
+      const container = document.getElementById('chatMessages');
+      container.innerHTML = '';
+      for (const m of msgs) {
+        const sender = allUsers.find(u => u.id === m.from)?.username || m.from;
+        const div = document.createElement('div');
+        div.className = 'message-left';
+        div.innerHTML = `<div class="message-bubble"><strong>${escapeHtml(sender)}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
+        container.appendChild(div);
+      }
+      container.scrollTop = container.scrollHeight;
+    } catch (err) {
+      console.error('Open group error:', err);
+      document.getElementById('chatMessages').innerHTML = '<p>Error loading messages.</p>';
     }
-    container.scrollTop = container.scrollHeight;
   };
 
-  // Function to get current user ID (from token or cached)
-  let myId = null;
-  async function getMyId() {
-    if (myId) return myId;
-    const res = await fetchAuth('/user/profile');
-    const user = await res.json();
-    myId = user.id;
-    return myId;
-  }
-
+  // Send a message
   document.getElementById('sendMsg').onclick = async () => {
     const text = document.getElementById('msgInput').value.trim();
     if (!text || !currentChatId) return;
     if (currentChatType === 'user') {
       const res = await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: currentChatId, text }) });
-      if (res.ok) {
+      if (res && res.ok) {
         document.getElementById('msgInput').value = '';
-        startDM(currentChatId, currentChatName);
-        // Also refresh conversations list
-        loadConversations();
+        await startDM(currentChatId, currentChatName);
+        loadConversations(); // update sidebar
       }
     } else if (currentChatType === 'group') {
       const res = await fetchAuth(`/groups/${currentChatId}/message`, { method: 'POST', body: JSON.stringify({ text }) });
-      if (res.ok) {
+      if (res && res.ok) {
         document.getElementById('msgInput').value = '';
-        openGroup(currentChatId, currentChatName);
+        await openGroup(currentChatId, currentChatName);
       }
     }
   };
 
-  // Heartbeat for online status
-  async function updateOnlineStatus() { await fetchAuth('/online', { method: 'POST' }); }
+  // Refresh buttons
+  document.getElementById('refreshGroups').onclick = () => { loadGroups(); };
+  document.getElementById('refreshOnline').onclick = () => { loadOnlineUsers(); };
+  document.getElementById('refreshConvs').onclick = () => { loadConversations(); };
+
+  // Online status heartbeat
+  async function updateOnlineStatus() {
+    try { await fetchAuth('/online', { method: 'POST' }); } catch(e) {}
+  }
   updateOnlineStatus();
   setInterval(updateOnlineStatus, 30000);
   window.addEventListener('beforeunload', () => {
     fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
   });
 
-  function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+
+  // Theme switcher
+  function initTheme() {
+    const saved = localStorage.getItem('devTheme');
+    if (saved === 'light') document.body.classList.add('light');
+    document.getElementById('themeToggle')?.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      localStorage.setItem('devTheme', document.body.classList.contains('light') ? 'light' : 'dark');
+    });
+  }
+  initTheme();
+
+  document.getElementById('logoutBtn').onclick = () => {
+    fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+    localStorage.removeItem('token');
+    window.location.href = '/login.html';
+  };
 
   // Initial load
   (async () => {
@@ -190,15 +271,6 @@
     await loadOnlineUsers();
     await loadConversations();
   })();
-
-  // Theme and logout
-  function initTheme() { /* add your theme logic */ }
-  initTheme();
-  document.getElementById('logoutBtn').onclick = () => {
-    fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-    localStorage.removeItem('token');
-    window.location.href = '/login.html';
-  };
 </script>
 </body>
 </html>

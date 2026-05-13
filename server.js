@@ -983,6 +983,11 @@ app.get('/api/contact-admin', auth, async (req, res) => {
   if (!admin) return res.status(404).json({ error: 'No admin found' });
   res.json({ id: admin.id, username: admin.username });
 });
+// Get all users (id, username) – for regular authenticated users
+app.get('/api/users', auth, async (req, res) => {
+  const users = await User.find({}, { id: 1, username: 1, _id: 0 });
+  res.json(users);
+});
 
 // ========== SERVE STATIC PAGES ==========
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
