@@ -1,0 +1,9 @@
+{ 
+  "appId": "com.error404.mobile", 
+  "appName": "404 DEV", 
+  "webDir": "www", 
+  "server": { 
+    "url": "https://error404-dev-platform.onrender.com", 
+    "cleartext": true 
+  } 
+} 
