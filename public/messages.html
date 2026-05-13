@@ -9,19 +9,78 @@
     .chat-layout { display: flex; gap: 20px; flex-wrap: wrap; }
     .sidebar-chat { flex: 1; min-width: 250px; background: #0a0c14; border-radius: 12px; padding: 15px; }
     .chat-area { flex: 2; min-width: 300px; background: #0a0c14; border-radius: 12px; padding: 15px; }
-    .online-dot { display: inline-block; width: 8px; height: 8px; background: #00ff00; border-radius: 50%; margin-left: 8px; }
-    .group-item, .user-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #333; }
-    .group-item:hover, .user-item:hover { background: #1a1f2e; }
-    .message-bubble {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 18px;
-      max-width: 80%;
+    .online-dot { display: inline-block; width: 8px; height: 8px; background: #00ff00; border-radius: 50%; margin-left: 8px; box-shadow: 0 0 4px #00ff00; }
+    .group-item, .user-item { 
+      padding: 10px; 
+      cursor: pointer; 
+      border-bottom: 1px solid #1f2a3a; 
+      transition: 0.1s;
+      border-radius: 12px;
       margin: 4px 0;
     }
-    .message-right { text-align: right; }
-    .message-right .message-bubble { background: #ff004c; color: white; }
-    .message-left .message-bubble { background: #1a1f2e; color: #eef5ff; }
+    .group-item:hover, .user-item:hover { background: #1f2a3a; transform: translateX(4px); }
+    .message-container {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16px;
+    }
+    .message-right {
+      align-items: flex-end;
+    }
+    .message-left {
+      align-items: flex-start;
+    }
+    .message-bubble {
+      max-width: 70%;
+      padding: 10px 16px;
+      border-radius: 24px;
+      word-wrap: break-word;
+      position: relative;
+    }
+    .message-right .message-bubble {
+      background: linear-gradient(135deg, #ff004c, #ff3b7c);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+    .message-left .message-bubble {
+      background: #1e2a3a;
+      color: #eef5ff;
+      border-bottom-left-radius: 6px;
+    }
+    .message-meta {
+      font-size: 0.7rem;
+      margin-top: 4px;
+      opacity: 0.7;
+      display: flex;
+      gap: 8px;
+    }
+    .message-right .message-meta {
+      justify-content: flex-end;
+    }
+    .refresh-btn {
+      background: none;
+      border: 1px solid #00f0ff;
+      border-radius: 20px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 0.7rem;
+      margin-left: 8px;
+      transition: 0.2s;
+    }
+    .refresh-btn:hover {
+      background: rgba(0,240,255,0.2);
+    }
+    #chatMessages {
+      background: #0a0c14;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .typing-indicator {
+      font-size: 0.8rem;
+      color: #00f0ff;
+      margin-left: 16px;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body>
@@ -34,18 +93,19 @@
   <h1>💬 Messages & Groups</h1>
   <div class="chat-layout">
     <div class="sidebar-chat glass-card">
-      <h3>👥 Your Groups <button class="refresh-btn" id="refreshGroups" style="background:none; border:1px solid #00f0ff; border-radius:20px; padding:2px 8px;">↻</button></h3>
+      <h3>👥 Your Groups <button class="refresh-btn" id="refreshGroups">↻</button></h3>
       <div id="groupsList">Loading groups...</div>
       <hr>
-      <h3>🟢 Online Users <button class="refresh-btn" id="refreshOnline" style="background:none; border:1px solid #00f0ff; border-radius:20px; padding:2px 8px;">↻</button></h3>
+      <h3>🟢 Online Users <button class="refresh-btn" id="refreshOnline">↻</button></h3>
       <div id="onlineUsersList">Loading online users...</div>
       <hr>
-      <h3>📩 Direct Conversations <button class="refresh-btn" id="refreshConvs" style="background:none; border:1px solid #00f0ff; border-radius:20px; padding:2px 8px;">↻</button></h3>
+      <h3>📩 Direct Conversations <button class="refresh-btn" id="refreshConvs">↻</button></h3>
       <div id="convList">Loading conversations...</div>
     </div>
     <div class="chat-area glass-card">
       <h3 id="chatHeader">Select a conversation</h3>
-      <div id="chatMessages" style="height:400px; overflow-y:auto; background:#0f111f; padding:10px; border-radius:8px;"></div>
+      <div id="chatMessages" style="height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+      <div class="typing-indicator" id="typingIndicator" style="display:none;">✍️ someone is typing...</div>
       <textarea id="msgInput" rows="2" placeholder="Type message..."></textarea>
       <button id="sendMsg" class="btn">Send</button>
     </div>
@@ -66,35 +126,34 @@
   }
 
   // ========== GLOBAL VARIABLES ==========
-  let currentChatType = null;
+  let currentChatType = null;   // 'user' or 'group'
   let currentChatId = null;
   let currentChatName = null;
-  let allUsers = [];      // filled from /api/users
+  let allUsers = [];
   let currentUserId = null;
+  let pollInterval = null;
 
   async function getCurrentUserId() {
     if (currentUserId) return currentUserId;
-    const res = await fetchAuth('/user/profile');
-    if (res && res.ok) {
-      const user = await res.json();
-      currentUserId = user.id;
-      return currentUserId;
-    }
+    try {
+      const res = await fetchAuth('/user/profile');
+      if (res && res.ok) {
+        const user = await res.json();
+        currentUserId = user.id;
+        return currentUserId;
+      }
+    } catch(e) {}
     return null;
   }
 
-  // Load all users (id & username) for display
   async function loadUsers() {
     try {
       const res = await fetchAuth('/users');
       if (res && res.ok) allUsers = await res.json();
       else console.warn('Failed to load user list');
-    } catch (err) {
-      console.error('Error loading users:', err);
-    }
+    } catch (err) { console.error('Error loading users:', err); }
   }
 
-  // Load groups the user belongs to
   async function loadGroups() {
     const container = document.getElementById('groupsList');
     container.innerHTML = 'Loading groups...';
@@ -102,7 +161,6 @@
       const res = await fetchAuth('/groups');
       if (!res) throw new Error('No response');
       const groups = await res.json();
-      console.log('Groups:', groups);
       if (!groups || groups.length === 0) {
         container.innerHTML = '<p>You are not in any group yet.</p>';
         return;
@@ -114,7 +172,6 @@
     }
   }
 
-  // Load online users
   async function loadOnlineUsers() {
     const container = document.getElementById('onlineUsersList');
     container.innerHTML = 'Loading online users...';
@@ -122,7 +179,6 @@
       const res = await fetchAuth('/online-users');
       if (!res) throw new Error('No response');
       const online = await res.json();
-      console.log('Online users:', online);
       if (!online || online.length === 0) {
         container.innerHTML = '<p>No one online</p>';
       } else {
@@ -134,7 +190,6 @@
     }
   }
 
-  // Load direct conversations
   async function loadConversations() {
     const container = document.getElementById('convList');
     container.innerHTML = 'Loading conversations...';
@@ -142,7 +197,6 @@
       const res = await fetchAuth('/conversations');
       if (!res) throw new Error('No response');
       const convs = await res.json();
-      console.log('Conversations:', convs);
       if (!convs || convs.length === 0) {
         container.innerHTML = '<p>No direct messages yet.</p>';
         return;
@@ -154,7 +208,54 @@
     }
   }
 
-  // Open a direct message conversation
+  // ========== CHAT DISPLAY ==========
+  function renderMessages(messages, otherName, isGroup = false) {
+    const container = document.getElementById('chatMessages');
+    container.innerHTML = '';
+    for (const m of messages) {
+      const isFromMe = m.from === currentUserId;
+      const senderName = isGroup && !isFromMe ? (allUsers.find(u => u.id === m.from)?.username || m.from) : (isFromMe ? 'You' : otherName);
+      const div = document.createElement('div');
+      div.className = `message-container ${isFromMe ? 'message-right' : 'message-left'}`;
+      div.innerHTML = `
+        <div class="message-bubble">
+          ${isGroup && !isFromMe ? `<strong>${escapeHtml(senderName)}</strong><br>` : ''}
+          ${escapeHtml(m.text)}
+          <div class="message-meta">
+            <span>${new Date(m.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
+            <span>${new Date(m.createdAt).toLocaleDateString()}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Polling for new messages
+  function startPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(async () => {
+      if (!currentChatId) return;
+      if (currentChatType === 'user') {
+        const res = await fetchAuth(`/messages/${currentChatId}`);
+        if (res && res.ok) {
+          const msgs = await res.json();
+          renderMessages(msgs, currentChatName, false);
+          // Also refresh conversations list to update last message
+          loadConversations();
+        }
+      } else if (currentChatType === 'group') {
+        const res = await fetchAuth(`/groups/${currentChatId}/messages`);
+        if (res && res.ok) {
+          const msgs = await res.json();
+          renderMessages(msgs, currentChatName, true);
+        }
+      }
+    }, 5000);
+  }
+
+  // ========== OPEN CONVERSATIONS ==========
   window.startDM = async function(otherId, name) {
     currentChatType = 'user';
     currentChatId = otherId;
@@ -164,24 +265,14 @@
       const res = await fetchAuth(`/messages/${otherId}`);
       if (!res) throw new Error('No response');
       const msgs = await res.json();
-      const container = document.getElementById('chatMessages');
-      const myId = await getCurrentUserId();
-      container.innerHTML = '';
-      for (const m of msgs) {
-        const isFromMe = m.from === myId;
-        const div = document.createElement('div');
-        div.className = isFromMe ? 'message-right' : 'message-left';
-        div.innerHTML = `<div class="message-bubble"><strong>${isFromMe ? 'You' : name}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
-        container.appendChild(div);
-      }
-      container.scrollTop = container.scrollHeight;
+      renderMessages(msgs, name, false);
+      startPolling();
     } catch (err) {
       console.error('Open DM error:', err);
       document.getElementById('chatMessages').innerHTML = '<p>Error loading messages.</p>';
     }
   };
 
-  // Open a group conversation
   window.openGroup = async function(groupId, name) {
     currentChatType = 'group';
     currentChatId = groupId;
@@ -191,23 +282,15 @@
       const res = await fetchAuth(`/groups/${groupId}/messages`);
       if (!res) throw new Error('No response');
       const msgs = await res.json();
-      const container = document.getElementById('chatMessages');
-      container.innerHTML = '';
-      for (const m of msgs) {
-        const sender = allUsers.find(u => u.id === m.from)?.username || m.from;
-        const div = document.createElement('div');
-        div.className = 'message-left';
-        div.innerHTML = `<div class="message-bubble"><strong>${escapeHtml(sender)}:</strong> ${escapeHtml(m.text)}<br><small style="font-size:0.7rem;">${new Date(m.createdAt).toLocaleString()}</small></div>`;
-        container.appendChild(div);
-      }
-      container.scrollTop = container.scrollHeight;
+      renderMessages(msgs, name, true);
+      startPolling();
     } catch (err) {
       console.error('Open group error:', err);
       document.getElementById('chatMessages').innerHTML = '<p>Error loading messages.</p>';
     }
   };
 
-  // Send a message
+  // ========== SEND MESSAGE ==========
   document.getElementById('sendMsg').onclick = async () => {
     const text = document.getElementById('msgInput').value.trim();
     if (!text || !currentChatId) return;
@@ -215,30 +298,52 @@
       const res = await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: currentChatId, text }) });
       if (res && res.ok) {
         document.getElementById('msgInput').value = '';
-        await startDM(currentChatId, currentChatName);
-        loadConversations(); // update sidebar
+        // Immediately display the new message
+        const newMsg = await res.json();
+        const container = document.getElementById('chatMessages');
+        const isFromMe = true;
+        const div = document.createElement('div');
+        div.className = 'message-container message-right';
+        div.innerHTML = `
+          <div class="message-bubble">
+            ${escapeHtml(newMsg.text)}
+            <div class="message-meta">
+              <span>${new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
+              <span>${new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+        loadConversations(); // update sidebar last message
       }
     } else if (currentChatType === 'group') {
       const res = await fetchAuth(`/groups/${currentChatId}/message`, { method: 'POST', body: JSON.stringify({ text }) });
       if (res && res.ok) {
         document.getElementById('msgInput').value = '';
-        await openGroup(currentChatId, currentChatName);
+        // Refresh group messages
+        const convRes = await fetchAuth(`/groups/${currentChatId}/messages`);
+        if (convRes && convRes.ok) {
+          const msgs = await convRes.json();
+          renderMessages(msgs, currentChatName, true);
+        }
       }
     }
   };
 
-  // Refresh buttons
-  document.getElementById('refreshGroups').onclick = () => { loadGroups(); };
-  document.getElementById('refreshOnline').onclick = () => { loadOnlineUsers(); };
-  document.getElementById('refreshConvs').onclick = () => { loadConversations(); };
+  // ========== REFRESH BUTTONS ==========
+  document.getElementById('refreshGroups').onclick = loadGroups;
+  document.getElementById('refreshOnline').onclick = loadOnlineUsers;
+  document.getElementById('refreshConvs').onclick = loadConversations;
 
-  // Online status heartbeat
+  // ========== ONLINE STATUS HEARTBEAT ==========
   async function updateOnlineStatus() {
     try { await fetchAuth('/online', { method: 'POST' }); } catch(e) {}
   }
   updateOnlineStatus();
   setInterval(updateOnlineStatus, 30000);
   window.addEventListener('beforeunload', () => {
+    if (pollInterval) clearInterval(pollInterval);
     fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
   });
 
@@ -247,7 +352,7 @@
     return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
   }
 
-  // Theme switcher
+  // ========== THEME & LOGOUT ==========
   function initTheme() {
     const saved = localStorage.getItem('devTheme');
     if (saved === 'light') document.body.classList.add('light');
@@ -257,16 +362,17 @@
     });
   }
   initTheme();
-
   document.getElementById('logoutBtn').onclick = () => {
+    if (pollInterval) clearInterval(pollInterval);
     fetch('/api/offline', { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
     localStorage.removeItem('token');
     window.location.href = '/login.html';
   };
 
-  // Initial load
+  // ========== INIT ==========
   (async () => {
     await loadUsers();
+    await getCurrentUserId();
     await loadGroups();
     await loadOnlineUsers();
     await loadConversations();
