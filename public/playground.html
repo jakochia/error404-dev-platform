@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>404 DEV | Code Playground // GLITCH EXEC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+  <title>404 DEV | Code Playground // NEON EXEC</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230b0f1a'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' font-weight='bold' font-family='monospace' fill='%2300f0ff' stroke='%23ff004c' stroke-width='3' filter='url(%23glow)'%3E404%3C/text%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='2' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -14,59 +15,79 @@
     }
 
     body {
-      background: radial-gradient(circle at 10% 20%, #0a0c18 0%, #010105 100%);
+      background: radial-gradient(circle at 20% 30%, #0a0c18 0%, #010105 100%);
       font-family: 'Inter', system-ui, sans-serif;
       color: #eef5ff;
       min-height: 100vh;
       position: relative;
       overflow-x: hidden;
+      transition: background 0.3s ease, color 0.2s;
     }
 
-    /* animated cyber background */
-    .cyber-grid {
+    /* light theme */
+    body.light {
+      background: #eef2fa;
+      color: #0a0c18;
+    }
+    body.light .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+    }
+    body.light .navbar {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+    body.light .code-editor, body.light .output-pane {
+      background: #fefefe;
+      color: #0a0c18;
+      border-color: #ff3366;
+    }
+    body.light .snippet-item {
+      background: rgba(0, 0, 0, 0.03);
+      border-left-color: #ff3366;
+    }
+    body.light .snippet-item:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    /* animated background particles */
+    .particles {
       position: fixed;
-      inset: 0;
-      background-image: 
-        linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
-      background-size: 48px 48px;
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: 0;
-    }
-    .noise {
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
       pointer-events: none;
-      z-index: 1;
-      mix-blend-mode: overlay;
+      overflow: hidden;
     }
-    .orb {
-      position: fixed;
+    .particle {
+      position: absolute;
+      background: rgba(0, 240, 255, 0.4);
       border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.3;
-      z-index: 0;
-      pointer-events: none;
+      filter: blur(4px);
+      animation: floatParticle 15s infinite alternate;
     }
-    .orb-1 { width: 60vw; height: 60vw; background: radial-gradient(circle, #ff1a6e, transparent); top: -30vh; left: -20vw; }
-    .orb-2 { width: 70vw; height: 70vw; background: radial-gradient(circle, #00f0ff, transparent); bottom: -40vh; right: -20vw; animation: floatOrb 20s infinite alternate; }
-    @keyframes floatOrb { 0% { transform: translate(0,0); } 100% { transform: translate(6%, 10%); } }
+    @keyframes floatParticle {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.2; }
+      100% { transform: translate(30px, -40px) scale(1.2); opacity: 0.6; }
+    }
 
-    /* navbar – glass morph */
+    /* navbar glass morph */
     .navbar {
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(20px);
       background: rgba(5, 10, 25, 0.75);
-      border-radius: 60px;
+      border-radius: 100px;
       margin: 1rem 1.5rem;
-      padding: 0.6rem 1.8rem;
+      padding: 0.6rem 2rem;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
       gap: 12px;
-      border: 1px solid rgba(255, 51, 102, 0.5);
-      box-shadow: 0 0 25px rgba(255, 51, 102, 0.25);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 240, 255, 0.2);
       position: relative;
       z-index: 20;
     }
@@ -76,29 +97,33 @@
       font-weight: 500;
       padding: 0.5rem 1rem;
       border-radius: 40px;
-      transition: 0.2s;
+      transition: 0.25s;
       font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .nav-link:hover {
       background: rgba(0, 240, 255, 0.2);
       color: #0ff;
       transform: translateY(-2px);
-      box-shadow: 0 0 10px rgba(0,240,255,0.4);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
     }
     .btn-small {
-      background: #ff1a6e;
+      background: linear-gradient(135deg, #ff1a6e, #ff004c);
       border: none;
-      padding: 6px 14px;
+      padding: 6px 16px;
       border-radius: 40px;
       color: white;
       cursor: pointer;
       transition: 0.2s;
-      font-weight: 500;
+      font-weight: 600;
     }
     .btn-small:hover {
       background: #00f0ff;
-      box-shadow: 0 0 14px #0ff;
+      box-shadow: 0 0 12px #0ff;
       transform: scale(1.02);
+      color: #0a0c18;
     }
 
     .container {
@@ -109,8 +134,9 @@
       z-index: 15;
     }
 
+    /* glitch title */
     h1 {
-      font-size: clamp(2rem, 8vw, 3.5rem);
+      font-size: clamp(2rem, 8vw, 3.8rem);
       font-weight: 800;
       background: linear-gradient(135deg, #ff1a6e, #00f0ff, #ff1a6e);
       background-size: 200% auto;
@@ -119,14 +145,14 @@
       color: transparent;
       margin-bottom: 2rem;
       text-align: center;
-      animation: glitchPulse 2.5s infinite alternate;
+      letter-spacing: -0.02em;
+      animation: glitchPulse 3s infinite alternate;
     }
     @keyframes glitchPulse {
-      0% { text-shadow: 0 0 2px #ff1a6e; filter: blur(0);}
-      100% { text-shadow: 0 0 15px #00f0ff; filter: blur(0.3px);}
+      0% { text-shadow: -2px 0 #ff1a6e, 2px 0 #00f0ff; opacity: 0.9; }
+      100% { text-shadow: 2px 0 #ff1a6e, -2px 0 #00f0ff; opacity: 1; }
     }
 
-    /* playground layout */
     .playground-layout {
       display: flex;
       gap: 28px;
@@ -135,84 +161,82 @@
     }
     .editor-panel, .preview-panel {
       flex: 1;
-      min-width: 320px;
+      min-width: 280px;
     }
     .glass-card {
-      background: rgba(10, 15, 30, 0.7);
-      backdrop-filter: blur(16px);
-      border-radius: 32px;
-      border: 1px solid rgba(255, 51, 102, 0.5);
-      padding: 1.6rem;
-      transition: all 0.25s;
-      box-shadow: 0 10px 25px -8px rgba(0,0,0,0.4);
+      background: rgba(10, 15, 30, 0.65);
+      backdrop-filter: blur(20px);
+      border-radius: 40px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 1.8rem;
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5);
     }
     .glass-card:hover {
       border-color: #0ff;
-      box-shadow: 0 0 28px rgba(0, 240, 255, 0.25);
-      transform: translateY(-2px);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
+      transform: translateY(-4px);
     }
     .panel-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 1rem;
+      margin-bottom: 1.2rem;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
     }
     .panel-header h3 {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       background: linear-gradient(145deg, #fff, #ffb3d1);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
+      font-weight: 700;
     }
 
-    /* custom select */
+    /* neon select */
     .cyber-select {
       background: rgba(0, 0, 0, 0.7);
       border: 1px solid #ff3366;
       border-radius: 60px;
-      padding: 8px 18px;
+      padding: 8px 20px;
       color: #0ff;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.85rem;
       cursor: pointer;
       transition: 0.2s;
+      backdrop-filter: blur(4px);
     }
-    .cyber-select:focus {
+    .cyber-select:hover {
       border-color: #0ff;
-      outline: none;
-      box-shadow: 0 0 12px #0ff;
+      box-shadow: 0 0 10px #0ff;
     }
 
-    /* code editor area */
     .code-editor {
       width: 100%;
-      height: 320px;
+      height: 340px;
       font-family: 'JetBrains Mono', monospace;
-      background: #03060c;
+      background: #03060cee;
       color: #0ff;
       border: 1px solid rgba(255, 51, 102, 0.6);
-      border-radius: 24px;
+      border-radius: 28px;
       padding: 18px;
       font-size: 0.9rem;
       line-height: 1.5;
       resize: vertical;
-      transition: 0.2s;
-      tab-size: 2;
+      transition: 0.25s;
     }
     .code-editor:focus {
       border-color: #0ff;
-      box-shadow: 0 0 18px #0ff6;
+      box-shadow: 0 0 20px #0ff4;
       outline: none;
     }
 
-    /* output area */
     .output-pane {
-      background: #03060c;
-      border-radius: 24px;
-      padding: 1rem;
-      min-height: 320px;
+      background: #03060cee;
+      border-radius: 28px;
+      padding: 1.2rem;
+      min-height: 340px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.9rem;
       border: 1px solid rgba(255, 51, 102, 0.4);
@@ -230,23 +254,24 @@
 
     .button-group {
       display: flex;
-      gap: 12px;
-      margin-top: 18px;
+      gap: 15px;
+      margin-top: 24px;
       flex-wrap: wrap;
     }
     .btn {
       background: linear-gradient(95deg, #ff004c, #c4003b);
       border: none;
-      padding: 10px 22px;
+      padding: 12px 26px;
       border-radius: 60px;
       font-weight: 700;
       color: white;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.25s;
       font-size: 0.9rem;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      letter-spacing: 0.5px;
     }
     .btn-outline {
       background: transparent;
@@ -256,14 +281,15 @@
     .btn-outline:hover {
       background: rgba(255, 51, 102, 0.2);
       border-color: #0ff;
+      transform: translateY(-2px);
     }
     .btn:hover {
       background: linear-gradient(95deg, #00c3ff, #0080aa);
-      box-shadow: 0 0 18px #0ff;
-      transform: scale(1.02);
+      box-shadow: 0 0 22px #0ff;
+      transform: translateY(-2px);
     }
 
-    /* snippets */
+    /* snippets area with glass */
     .snippets-section {
       margin-top: 0.5rem;
     }
@@ -271,14 +297,14 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
-      max-height: 280px;
+      max-height: 300px;
       overflow-y: auto;
-      padding-right: 8px;
+      padding-right: 6px;
     }
     .snippet-item {
-      background: #0a0e1a;
-      padding: 0.8rem 1.2rem;
-      border-radius: 24px;
+      background: rgba(10, 14, 26, 0.8);
+      padding: 1rem 1.5rem;
+      border-radius: 28px;
       border-left: 5px solid #ff004c;
       display: flex;
       justify-content: space-between;
@@ -286,198 +312,233 @@
       flex-wrap: wrap;
       gap: 12px;
       transition: 0.2s;
+      backdrop-filter: blur(4px);
     }
     .snippet-item:hover {
-      background: #12172a;
+      background: rgba(20, 25, 45, 0.9);
       border-left-color: #0ff;
+      transform: translateX(6px);
     }
     .snippet-title {
       font-family: monospace;
       font-weight: 600;
       color: #ffb3c6;
+      font-size: 0.9rem;
     }
 
-    /* scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0c14; border-radius: 6px; }
-    ::-webkit-scrollbar-thumb { background: #ff3366; border-radius: 6px; }
+    /* custom scroll */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0c14; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #ff3366; border-radius: 10px; }
 
-    /* light theme override */
-    body.light .glass-card { background: rgba(240, 242, 255, 0.9); color: #111; }
-    body.light .navbar a { color: #111; }
-    body.light .code-editor, body.light .output-pane { background: #f5f5ff; color: #111; border-color: #ff3366; }
-    body.light .cyber-select { background: white; color: #111; }
     @media (max-width: 860px) {
-      .navbar { gap: 8px; margin: 0.8rem; }
+      .navbar { margin: 0.8rem; padding: 0.5rem 1rem; gap: 8px; }
       .container { padding: 0 1rem; }
+      .glass-card { padding: 1.2rem; }
+      .panel-header h3 { font-size: 1.3rem; }
+    }
+    @media (max-width: 680px) {
+      .playground-layout { flex-direction: column; }
+      .code-editor { height: 280px; }
+      .output-pane { min-height: 280px; }
+      .btn { padding: 8px 18px; font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
-  <div class="cyber-grid"></div>
-  <div class="noise"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
+<div class="particles" id="particles"></div>
 
-  <div class="navbar">
-    <a href="/user-dashboard.html" class="nav-link">🏠 Dashboard</a>
-    <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
-    <a href="/forum.html" class="nav-link">💬 Forum</a>
-    <a href="/playground.html" class="nav-link">🧪 Playground</a>
-    <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
-    <a href="/messages.html" class="nav-link">💬 Messages</a>
-    <button id="themeToggle" class="btn-small">🌓</button>
-    <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
-  </div>
+<div class="navbar">
+  <a href="/user-dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+  <a href="/coding-hub.html" class="nav-link"><i class="fas fa-code"></i> Coding Hub</a>
+  <a href="/forum.html" class="nav-link"><i class="fas fa-comments"></i> Forum</a>
+  <a href="/playground.html" class="nav-link"><i class="fas fa-flask"></i> Playground</a>
+  <a href="/toolkit.html" class="nav-link"><i class="fas fa-toolbox"></i> Toolkit</a>
+  <a href="/messages.html" class="nav-link"><i class="fas fa-envelope"></i> Messages</a>
+  <button id="themeToggle" class="btn-small"><i class="fas fa-moon"></i> Theme</button>
+  <a href="#" id="logoutBtn" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
 
-  <div class="container">
-    <h1>⚡ CODE PLAYGROUND // LIVE EXECUTION</h1>
-    <div class="playground-layout">
-      <div class="editor-panel glass-card">
-        <div class="panel-header">
-          <h3>✧ EDITOR</h3>
-          <select id="languageSelect" class="cyber-select">
-            <option value="javascript">JavaScript (in‑browser)</option>
-            <option value="html">HTML/CSS (live preview)</option>
-            <option value="python">Python (backend)</option>
-          </select>
-        </div>
-        <textarea id="codeEditor" class="code-editor" spellcheck="false">// Welcome to 404 Playground
-console.log("Hello, Glitch Rebel!");
-document.body?.style && (document.body.style.background = "#0a0c18");
-alert("Code runs safely in sandbox");</textarea>
-        <div class="button-group">
-          <button id="runCodeBtn" class="btn">▶ RUN CODE</button>
-          <button id="saveSnippet" class="btn btn-outline">💾 SAVE SNIPPET</button>
-          <button id="clearOutputBtn" class="btn btn-outline">🗑️ CLEAR OUTPUT</button>
-        </div>
-      </div>
-      <div class="preview-panel glass-card">
-        <div class="panel-header">
-          <h3>📟 OUTPUT / PREVIEW</h3>
-          <span id="execStatus" style="font-size:0.7rem; color:#0ff;">● ready</span>
-        </div>
-        <div id="output" class="output-pane"></div>
-      </div>
-    </div>
-    <div class="glass-card snippets-section">
+<div class="container">
+  <h1><i class="fas fa-bolt"></i> NEON PLAYGROUND // LIVE EXEC</h1>
+  <div class="playground-layout">
+    <div class="editor-panel glass-card">
       <div class="panel-header">
-        <h3>📚 SAVED SNIPPETS</h3>
-        <button id="clearAllSnippets" class="btn-small" style="background:#333;">Clear All</button>
+        <h3><i class="fas fa-terminal"></i> EDITOR</h3>
+        <select id="languageSelect" class="cyber-select">
+          <option value="javascript">⚡ JavaScript (browser)</option>
+          <option value="html">🎨 HTML/CSS (preview)</option>
+          <option value="python">🐍 Python (backend)</option>
+        </select>
       </div>
-      <div id="snippetsList"></div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false">// Welcome to Neon Playground 🌟
+console.log("Hello, Glitch Rebel!");
+console.log("Try HTML or Python modes too");
+
+// DOM manipulation example
+document.body.style.background = "#0a0c18";
+alert("Code runs in sandbox!");</textarea>
+      <div class="button-group">
+        <button id="runCodeBtn" class="btn"><i class="fas fa-play"></i> EXECUTE</button>
+        <button id="saveSnippet" class="btn btn-outline"><i class="fas fa-save"></i> SAVE</button>
+        <button id="clearOutputBtn" class="btn btn-outline"><i class="fas fa-broom"></i> CLEAR</button>
+      </div>
+    </div>
+    <div class="preview-panel glass-card">
+      <div class="panel-header">
+        <h3><i class="fas fa-chalkboard"></i> OUTPUT / PREVIEW</h3>
+        <span id="execStatus" style="font-size:0.7rem; background:#ff004c30; padding:4px 12px; border-radius:40px;"><i class="fas fa-circle"></i> ready</span>
+      </div>
+      <div id="output" class="output-pane"></div>
     </div>
   </div>
+  <div class="glass-card snippets-section">
+    <div class="panel-header">
+      <h3><i class="fas fa-database"></i> SAVED SNIPPETS</h3>
+      <button id="clearAllSnippets" class="btn-small" style="background:#333;"><i class="fas fa-trash-alt"></i> Clear All</button>
+    </div>
+    <div id="snippetsList"></div>
+  </div>
+</div>
 
-  <script src="/js/common.js"></script>
-  <script>
-    // ---------- ENHANCED CODE EXECUTION (front-end sandbox + backend fallback) ----------
+<script src="/js/common.js"></script>
+<script>
+  (function() {
+    // ========== PARTICLES BACKGROUND (attractive) ==========
+    function createParticles() {
+      const container = document.getElementById('particles');
+      if (!container) return;
+      for (let i = 0; i < 45; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        const size = Math.random() * 6 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDuration = Math.random() * 15 + 8 + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particle.style.background = `radial-gradient(circle, ${Math.random() > 0.6 ? '#ff1a6e' : '#00f0ff'}, transparent)`;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // ========== DOM elements ==========
     const languageSelect = document.getElementById('languageSelect');
     const codeEditor = document.getElementById('codeEditor');
     const outputDiv = document.getElementById('output');
     const execStatus = document.getElementById('execStatus');
 
-    // Helper to safely execute JavaScript in a sandbox (no DOM pollution, capture logs)
+    // ========== sandboxed JS execution ==========
     function executeJS(code) {
       let logs = [];
       let errors = null;
-      const originalConsoleLog = console.log;
-      const originalConsoleError = console.error;
-      console.log = (...args) => { logs.push(args.map(a => String(a)).join(' ')); originalConsoleLog(...args); };
-      console.error = (...args) => { logs.push('❌ ' + args.map(a => String(a)).join(' ')); originalConsoleError(...args); };
+      const originalLog = console.log;
+      const originalError = console.error;
+      console.log = (...args) => { logs.push(args.map(a => String(a)).join(' ')); originalLog(...args); };
+      console.error = (...args) => { logs.push('❌ ' + args.map(a => String(a)).join(' ')); originalError(...args); };
       try {
-        // Use Function constructor to avoid leaking scope, but allow access to globalThis safely
-        const asyncWrapper = new Function('sandboxConsole', `
+        const runner = new Function('sandboxConsole', `
           try {
             ${code}
           } catch(e) {
             console.error(e.message);
           }
         `);
-        asyncWrapper(console);
+        runner(console);
       } catch (err) {
         errors = err.message;
         logs.push(`🚫 Execution error: ${err.message}`);
       } finally {
-        console.log = originalConsoleLog;
-        console.error = originalConsoleError;
+        console.log = originalLog;
+        console.error = originalError;
       }
-      return { output: logs.join('\n') || (errors ? `Error: ${errors}` : '✔️ Code executed (no output)'), error: errors };
+      return { output: logs.join('\n') || (errors ? `Error: ${errors}` : '✔️ executed (no console output)'), error: errors };
     }
 
-    // HTML preview
+    // ========== HTML preview ==========
     function renderHTML(htmlCode) {
-      const safeDoc = htmlCode.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      // We'll embed in iframe srcdoc with proper escaping
-      return `<iframe srcdoc="${htmlCode.replace(/"/g, '&quot;').replace(/'/g, "&#39;")}" style="width:100%; height:420px; border:none; background:white; border-radius:16px;"></iframe>`;
+      const escaped = htmlCode.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return `<iframe srcdoc="${escaped}" style="width:100%; height:420px; border:none; background:white; border-radius:20px;" title="preview"></iframe>`;
     }
 
-    // Main run function (preserves original fetchAuth for Python, adds front-end for JS/HTML)
+    // ========== RUN BUTTON ==========
     document.getElementById('runCodeBtn').addEventListener('click', async () => {
       const language = languageSelect.value;
       const code = codeEditor.value;
       outputDiv.innerHTML = '';
-      execStatus.innerHTML = '⏳ executing...';
-      execStatus.style.color = '#ffaa44';
+      execStatus.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> executing...';
+      execStatus.style.background = '#ffaa4430';
 
       try {
         if (language === 'javascript') {
-          // client-side JS execution (safe sandbox)
           setTimeout(() => {
             const result = executeJS(code);
-            outputDiv.innerText = result.output || '✔️ No output from script.';
-            if (result.error) outputDiv.style.color = '#ff8888';
-            else outputDiv.style.color = '#aaffdd';
-            execStatus.innerHTML = '✅ done (local JS)';
-            execStatus.style.color = '#0ff';
-          }, 30);
+            outputDiv.innerText = result.output;
+            outputDiv.style.color = result.error ? '#ff8888' : '#aaffdd';
+            execStatus.innerHTML = '<i class="fas fa-check-circle"></i> JS done';
+            execStatus.style.background = '#00ffaa30';
+          }, 20);
         } 
         else if (language === 'html') {
-          // HTML/CSS preview
           outputDiv.innerHTML = renderHTML(code);
-          execStatus.innerHTML = '✅ live preview ready';
-          execStatus.style.color = '#0ff';
+          execStatus.innerHTML = '<i class="fas fa-check-circle"></i> preview ready';
+          execStatus.style.background = '#0ff30';
         } 
         else if (language === 'python') {
-          // call backend (original fetchAuth)
-          const res = await fetchAuth('/execute', {
-            method: 'POST',
-            body: JSON.stringify({ language: 'python', code })
-          });
-          const data = await res.json();
-          outputDiv.innerText = data.output || data.error || '⚠️ No output from Python backend.';
-          execStatus.innerHTML = '✅ backend executed';
-          execStatus.style.color = '#0ff';
+          if (typeof fetchAuth === 'function') {
+            const res = await fetchAuth('/execute', {
+              method: 'POST',
+              body: JSON.stringify({ language: 'python', code })
+            });
+            const data = await res.json();
+            outputDiv.innerText = data.output || data.error || '⚠️ No output.';
+            execStatus.innerHTML = '<i class="fas fa-check-circle"></i> python done';
+          } else {
+            outputDiv.innerText = '⚠️ Python backend not available. Please ensure /api/execute exists.';
+            execStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> backend missing';
+          }
+          execStatus.style.background = '#ffaa4430';
         }
       } catch (err) {
-        outputDiv.innerText = `🔥 Execution error: ${err.message}`;
-        execStatus.innerHTML = '❌ failed';
-        execStatus.style.color = '#ff1a6e';
+        outputDiv.innerText = `🔥 Error: ${err.message}`;
+        execStatus.innerHTML = '<i class="fas fa-times-circle"></i> failed';
+        execStatus.style.background = '#ff004c30';
       }
+      setTimeout(() => { execStatus.style.background = '#ff004c30'; }, 1500);
     });
 
-    // Clear output button
     document.getElementById('clearOutputBtn').addEventListener('click', () => {
       outputDiv.innerHTML = '';
-      execStatus.innerHTML = '● cleared';
-      execStatus.style.color = '#0ff';
+      execStatus.innerHTML = '<i class="fas fa-ban"></i> cleared';
+      execStatus.style.background = '#ff004c30';
     });
 
-    // ---------- SNIPPETS (localStorage) – beautified ----------
+    // ========== SNIPPETS (localStorage) ==========
     let snippets = JSON.parse(localStorage.getItem('playground_snippets') || '[]');
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
     function renderSnippets() {
       const container = document.getElementById('snippetsList');
+      if (!container) return;
       container.innerHTML = '';
+      if (snippets.length === 0) {
+        container.innerHTML = '<div class="snippet-item" style="justify-content:center;">✨ No snippets — write code and click SAVE</div>';
+        return;
+      }
       snippets.forEach((s, idx) => {
         const div = document.createElement('div');
         div.className = 'snippet-item';
-        const preview = s.length > 60 ? s.substring(0, 60) + '…' : s;
+        const preview = s.length > 65 ? s.substring(0, 65) + '…' : s;
         div.innerHTML = `
-          <div class="snippet-title">📌 Snippet #${idx+1}</div>
-          <div style="font-family: monospace; font-size:0.75rem; color:#aaa; max-width:300px; overflow:hidden;">${escapeHtml(preview)}</div>
-          <div>
-            <button class="btn-small load-snippet" data-idx="${idx}">Load</button>
-            <button class="btn-small del-snippet" data-idx="${idx}" style="background:#444;">Delete</button>
+          <div class="snippet-title"><i class="fas fa-code"></i> Snippet #${idx+1}</div>
+          <div style="font-family: monospace; font-size:0.75rem; opacity:0.8; max-width:320px; overflow:hidden;">${escapeHtml(preview)}</div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-small load-snippet" data-idx="${idx}"><i class="fas fa-folder-open"></i> Load</button>
+            <button class="btn-small del-snippet" data-idx="${idx}" style="background:#444;"><i class="fas fa-trash"></i> Del</button>
           </div>
         `;
         container.appendChild(div);
@@ -493,10 +554,9 @@ alert("Code runs safely in sandbox");</textarea>
         renderSnippets();
       }));
     }
-
     document.getElementById('saveSnippet').addEventListener('click', () => {
-      const code = codeEditor.value;
-      if (!code.trim()) return;
+      const code = codeEditor.value.trim();
+      if (!code) return;
       snippets.push(code);
       localStorage.setItem('playground_snippets', JSON.stringify(snippets));
       renderSnippets();
@@ -509,32 +569,51 @@ alert("Code runs safely in sandbox");</textarea>
       }
     });
 
-    function escapeHtml(str) {
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
+    // ========== THEME TOGGLE ==========
+    function setTheme(isLight) {
+      if (isLight) document.body.classList.add('light');
+      else document.body.classList.remove('light');
+      localStorage.setItem('playgroundTheme', isLight ? 'light' : 'dark');
+    }
+    function initTheme() {
+      const stored = localStorage.getItem('playgroundTheme');
+      setTheme(stored === 'light');
+      document.getElementById('themeToggle')?.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
+    }
+
+    // ========== LOGOUT ==========
+    function logout() {
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      window.location.href = '/login.html';
+    }
+    document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      logout();
+    });
+
+    // fallback fetchAuth
+    if (typeof fetchAuth !== 'function') {
+      window.fetchAuth = async (url, options = {}) => {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json', ...options.headers };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(url, { ...options, headers });
+        if (res.status === 401) { localStorage.removeItem('token'); window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+        return res;
+      };
+    }
+
+    // demo snippets if empty
+    if (snippets.length === 0) {
+      snippets.push(`console.log("Welcome to 404 Playground!");\nconsole.log("Run JS, HTML, Python");`);
+      snippets.push(`<div style="background: linear-gradient(145deg, #ff1a6e, #0ff); padding:2rem; border-radius:2rem; text-align:center">\n  <h1 style="color:white">NEON MODE</h1>\n  <p>Live HTML preview works!</p>\n</div>`);
+      localStorage.setItem('playground_snippets', JSON.stringify(snippets));
     }
 
     renderSnippets();
-
-    // Logout & theme (preserve original)
-    document.getElementById('logoutBtn').addEventListener('click', logout);
     initTheme();
-
-    // Extra: add sample snippets to show capabilities
-    if (snippets.length === 0) {
-      snippets.push(`console.log("Welcome to 404 Playground!");
-console.log("Run JavaScript, HTML, Python!");`);
-      snippets.push(`<div style="background: linear-gradient(145deg, #ff1a6e, #0ff); padding:2rem; border-radius:2rem; text-align:center">
-  <h1 style="color:white">GLITCH MODE</h1>
-  <p>Live HTML preview works!</p>
-</div>`);
-      localStorage.setItem('playground_snippets', JSON.stringify(snippets));
-      renderSnippets();
-    }
-  </script>
+  })();
+</script>
 </body>
 </html>

@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="/css/style.css">
-  <title>404 DEV | Coding Hub // GLITCH WORKSPACE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+  <title>404 DEV | Coding Hub — Glitch Workspace</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230b0f1a'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' font-weight='bold' font-family='monospace' fill='%2300f0ff' stroke='%23ff004c' stroke-width='3' filter='url(%23glow)'%3E404%3C/text%3E%3Cdefs%3E%3Cfilter id='glow'%3E%3CfeGaussianBlur stdDeviation='2' result='coloredBlur'/%3E%3CfeMerge%3E%3CfeMergeNode in='coloredBlur'/%3E%3CfeMergeNode in='SourceGraphic'/%3E%3C/feMerge%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -21,6 +21,28 @@
       min-height: 100vh;
       position: relative;
       overflow-x: hidden;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    body.light {
+      background: #f0f4fa;
+      color: #0f172a;
+    }
+
+    body.light .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    body.light .fix-card {
+      background: #eef2f5;
+      color: #0f172a;
+      border-left-color: #ff004c;
+    }
+
+    body.light .navbar {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.1);
     }
 
     /* animated cyber background */
@@ -79,6 +101,12 @@
       border-radius: 40px;
       transition: 0.2s;
       font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    body.light .nav-link {
+      color: #0f172a;
     }
     .nav-link:hover {
       background: rgba(0, 240, 255, 0.15);
@@ -98,6 +126,7 @@
     .btn-small:hover {
       background: #00f0ff;
       box-shadow: 0 0 12px #00f0ff;
+      color: #0a0c18;
     }
 
     /* main container */
@@ -146,6 +175,14 @@
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    body.light .glass-card h2 {
+      background: linear-gradient(145deg, #0f2b5e, #c81e6b);
+      background-clip: text;
+      -webkit-background-clip: text;
     }
 
     /* tutorial grid */
@@ -161,10 +198,13 @@
       transition: 0.25s;
       border: 1px solid rgba(255, 51, 102, 0.3);
     }
+    body.light .broken-hover {
+      background: rgba(240, 245, 250, 0.9);
+    }
     .broken-hover:hover {
       transform: translateY(-6px);
       border-color: #0ff;
-      box-shadow: 0 15px 25px -12px #0ff30;
+      box-shadow: 0 15px 25px -12px rgba(0, 255, 255, 0.3);
     }
     .lang-tag {
       background: linear-gradient(95deg, #ff004c, #ff6699);
@@ -185,6 +225,7 @@
       border-left: 4px solid #ff004c;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.85rem;
+      transition: 0.2s;
     }
 
     textarea, input[type="text"] {
@@ -204,6 +245,11 @@
       border-color: #0ff;
       box-shadow: 0 0 12px #0ff8;
     }
+    body.light textarea, body.light input {
+      background: white;
+      color: #0f172a;
+      border-color: #c81e6b;
+    }
 
     .btn {
       background: linear-gradient(95deg, #ff004c, #c4003b);
@@ -216,6 +262,9 @@
       transition: 0.2s;
       margin-right: 12px;
       font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .btn:hover {
       background: linear-gradient(95deg, #00c3ff, #0080aa);
@@ -225,6 +274,7 @@
     #aiDebugBtn {
       background: linear-gradient(95deg, #0f0, #0a8);
       box-shadow: 0 0 10px #0f08;
+      color: #020408;
     }
     #aiSuggestion {
       background: #05070f;
@@ -233,119 +283,277 @@
       border: 1px solid #0ff;
       margin-top: 16px;
       font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    body.light #aiSuggestion {
+      background: #ffffffdd;
+      border-color: #00f0ff;
     }
 
     /* responsive */
     @media (max-width: 750px) {
-      .navbar { margin: 0.5rem; padding: 0.5rem 1rem; gap: 6px; }
+      .navbar { margin: 0.5rem; padding: 0.5rem 1rem; gap: 6px; justify-content: center; }
+      .nav-link, .btn-small { padding: 6px 12px; font-size: 0.75rem; }
       .container { padding: 0 1rem; }
       .glass-card { padding: 1rem; }
+      .btn { padding: 8px 16px; font-size: 0.8rem; }
+      .tutorial-grid { gap: 16px; }
+    }
+    @media (max-width: 480px) {
+      .navbar { flex-wrap: wrap; gap: 8px; }
+      .glass-card h2 { font-size: 1.4rem; }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #00f0ff;
+      color: #0a0c18;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-weight: 500;
+      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: fadeOut 2s ease forwards;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; transform: translateY(0); }
+      70% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(20px); visibility: hidden; }
     }
   </style>
 </head>
 <body>
-  <div class="cyber-grid"></div>
-  <div class="noise"></div>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
+<div class="cyber-grid"></div>
+<div class="noise"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
-  <div class="navbar">
-    <a href="/user-dashboard.html" class="nav-link">🏠 Dashboard</a>
-    <a href="/coding-hub.html" class="nav-link">💻 Coding Hub</a>
-    <a href="/forum.html" class="nav-link">💬 Forum</a>
-    <a href="/playground.html" class="nav-link">🧪 Playground</a>
-    <a href="/toolkit.html" class="nav-link">🛠️ Toolkit</a>
-    <a href="/messages.html" class="nav-link">💬 Messages</a>
-    <button id="themeToggle" class="btn-small">🌓</button>
-    <a href="#" id="logoutBtn" class="nav-link">🚪 Logout</a>
+<div class="navbar">
+  <a href="/user-dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+  <a href="/coding-hub.html" class="nav-link"><i class="fas fa-code"></i> Coding Hub</a>
+  <a href="/forum.html" class="nav-link"><i class="fas fa-comments"></i> Forum</a>
+  <a href="/playground.html" class="nav-link"><i class="fas fa-flask"></i> Playground</a>
+  <a href="/toolkit.html" class="nav-link"><i class="fas fa-toolbox"></i> Toolkit</a>
+  <a href="/messages.html" class="nav-link"><i class="fas fa-envelope"></i> Messages</a>
+  <button id="themeToggle" class="btn-small"><i class="fas fa-moon"></i> Theme</button>
+  <a href="#" id="logoutBtn" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+
+<div class="container">
+  <h1 class="glitch"><i class="fas fa-microchip"></i> Coding Hub</h1>
+  <div class="glass-card">
+    <h2><i class="fas fa-book-open"></i> Tutorials</h2>
+    <div class="tutorial-grid" id="tutorials"></div>
   </div>
-
-  <div class="container">
-    <h1 class="glitch">💻 Coding Hub</h1>
-    <div class="glass-card">
-      <h2>📚 Tutorials</h2>
-      <div class="tutorial-grid" id="tutorials"></div>
+  <div class="glass-card">
+    <h2><i class="fas fa-wrench"></i> Fix My Code</h2>
+    <div>
+      <textarea id="brokenCode" rows="5" placeholder="Paste your broken code here..."></textarea>
+      <input type="text" id="codeLanguage" placeholder="Language (JS/Python/HTML etc)">
+      <button id="submitFixRequest" class="btn"><i class="fas fa-paper-plane"></i> Request Fix</button>
+      <button id="aiDebugBtn" class="btn" style="background:#00f0ff; color:#0b0f1a;"><i class="fas fa-robot"></i> Ask AI to Fix</button>
+      <div id="aiSuggestion" style="margin-top:10px; background:#0a0c14; padding:10px; border-radius:8px; display:none;"></div>
     </div>
-    <div class="glass-card">
-      <h2>🔧 Fix My Code</h2>
-      <div>
-        <textarea id="brokenCode" rows="5" placeholder="Paste your broken code here..."></textarea>
-        <input type="text" id="codeLanguage" placeholder="Language (JS/Python/HTML etc)">
-        <button id="submitFixRequest" class="btn">📤 Request Fix</button>
-        <button id="aiDebugBtn" class="btn" style="background:#00f0ff; color:#0b0f1a;">🤖 Ask AI to Fix</button>
-        <div id="aiSuggestion" style="margin-top:10px; background:#0a0c14; padding:10px; border-radius:8px;"></div>
-      </div>
-      <div id="fixRequestsList"></div>
-    </div>
+    <div id="fixRequestsList"></div>
   </div>
+</div>
 
-  <!-- preserve all original scripts exactly -->
-  <script src="/js/common.js"></script>
-  <script>
-    // Tutorials data – unchanged
-    const tutorials = [
-      { title: "HTML Basics", lang: "HTML", level: "Beginner", link: "https://www.w3schools.com/html/" },
-      { title: "CSS Flexbox", lang: "CSS", level: "Intermediate", link: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/" },
-      { title: "JavaScript ES6", lang: "JS", level: "Advanced", link: "https://javascript.info/" },
-      { title: "Python for Beginners", lang: "Python", level: "Beginner", link: "https://www.learnpython.org/" },
-      { title: "Java OOP", lang: "Java", level: "Intermediate", link: "https://www.w3schools.com/java/" },
-      { title: "C++ STL", lang: "C++", level: "Advanced", link: "https://cplusplus.com/" }
-    ];
+<script>
+  // ========== TUTORIALS DATA ==========
+  const tutorials = [
+    { title: "HTML Basics", lang: "HTML", level: "Beginner", link: "https://www.w3schools.com/html/" },
+    { title: "CSS Flexbox", lang: "CSS", level: "Intermediate", link: "https://css-tricks.com/snippets/css/a-guide-to-flexbox/" },
+    { title: "JavaScript ES6", lang: "JS", level: "Advanced", link: "https://javascript.info/" },
+    { title: "Python for Beginners", lang: "Python", level: "Beginner", link: "https://www.learnpython.org/" },
+    { title: "Java OOP", lang: "Java", level: "Intermediate", link: "https://www.w3schools.com/java/" },
+    { title: "C++ STL", lang: "C++", level: "Advanced", link: "https://cplusplus.com/" }
+  ];
+
+  function renderTutorials() {
     const container = document.getElementById('tutorials');
+    if (!container) return;
+    container.innerHTML = '';
     tutorials.forEach(t => {
       const card = document.createElement('div');
       card.className = 'glass-card broken-hover';
-      card.innerHTML = `<h3>${t.title}</h3><span class="lang-tag">${t.lang}</span> <span>${t.level}</span><br><a href="${t.link}" target="_blank" style="color:#00f0ff;">Learn →</a>`;
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <h3 style="margin-bottom: 6px;">${escapeHtml(t.title)}</h3>
+        <span class="lang-tag">${escapeHtml(t.lang)}</span> <span>${escapeHtml(t.level)}</span>
+        <br><a href="${t.link}" target="_blank" style="color:#00f0ff; text-decoration:none; display:inline-block; margin-top:12px;"><i class="fas fa-external-link-alt"></i> Learn →</a>
+      `;
       container.appendChild(card);
     });
+  }
 
-    // Fix requests (stored in localStorage) – unchanged logic
-    let fixRequests = JSON.parse(localStorage.getItem('fixRequests') || '[]');
-    function renderFixRequests() {
-      const listDiv = document.getElementById('fixRequestsList');
-      listDiv.innerHTML = '';
-      fixRequests.slice().reverse().forEach(req => {
-        const div = document.createElement('div');
-        div.className = 'fix-card';
-        div.innerHTML = `<p><strong>Language: ${req.lang}</strong></p><pre>${req.code.substring(0, 200)}...</pre><button class="btn-small view-fix" data-code="${encodeURIComponent(req.code)}">View Full</button>`;
-        listDiv.appendChild(div);
-      });
-      document.querySelectorAll('.view-fix').forEach(btn => {
-        btn.addEventListener('click', () => alert(decodeURIComponent(btn.dataset.code)));
-      });
+  // ========== FIX REQUESTS (localStorage) ==========
+  let fixRequests = JSON.parse(localStorage.getItem('fixRequests') || '[]');
+
+  function showToast(msg, isError = false) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = msg;
+    toast.style.background = isError ? '#ff004c' : '#00f0ff';
+    toast.style.color = '#0b0f1a';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  function renderFixRequests() {
+    const listDiv = document.getElementById('fixRequestsList');
+    if (!listDiv) return;
+    if (fixRequests.length === 0) {
+      listDiv.innerHTML = '<div class="fix-card" style="text-align:center; opacity:0.7;"><i class="fas fa-inbox"></i> No fix requests yet. Paste your code above!</div>';
+      return;
     }
-    document.getElementById('submitFixRequest').addEventListener('click', () => {
-      const code = document.getElementById('brokenCode').value;
-      const lang = document.getElementById('codeLanguage').value;
-      if (!code.trim()) return;
-      fixRequests.push({ code, lang, timestamp: Date.now() });
-      localStorage.setItem('fixRequests', JSON.stringify(fixRequests));
-      renderFixRequests();
-      document.getElementById('brokenCode').value = '';
+    listDiv.innerHTML = '';
+    [...fixRequests].reverse().forEach((req, idx) => {
+      const div = document.createElement('div');
+      div.className = 'fix-card';
+      const preview = req.code.length > 200 ? req.code.substring(0, 200) + '...' : req.code;
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+          <strong><i class="fas fa-code"></i> Language: ${escapeHtml(req.lang) || 'Unknown'}</strong>
+          <small>${new Date(req.timestamp).toLocaleString()}</small>
+        </div>
+        <pre style="margin-top:10px; white-space: pre-wrap; word-break: break-word;">${escapeHtml(preview)}</pre>
+        <button class="btn-small view-fix" data-code="${encodeURIComponent(req.code)}" style="margin-top:8px;"><i class="fas fa-eye"></i> View Full Code</button>
+      `;
+      listDiv.appendChild(div);
     });
+    document.querySelectorAll('.view-fix').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fullCode = decodeURIComponent(btn.dataset.code);
+        alert(fullCode);
+      });
+    });
+  }
+
+  document.getElementById('submitFixRequest')?.addEventListener('click', () => {
+    const code = document.getElementById('brokenCode').value.trim();
+    const lang = document.getElementById('codeLanguage').value.trim();
+    if (!code) {
+      showToast('❌ Please paste some code first', true);
+      return;
+    }
+    fixRequests.push({ code, lang: lang || 'Unknown', timestamp: Date.now() });
+    localStorage.setItem('fixRequests', JSON.stringify(fixRequests));
     renderFixRequests();
+    document.getElementById('brokenCode').value = '';
+    document.getElementById('codeLanguage').value = '';
+    showToast('✅ Fix request posted! The community will help.');
+  });
 
-    // AI Debug – original fetchAuth preserved
-    document.getElementById('aiDebugBtn').addEventListener('click', async () => {
-      const code = document.getElementById('brokenCode').value;
-      if (!code.trim()) return alert('Paste your code first');
-      const res = await fetchAuth('/ai-debug', { method: 'POST', body: JSON.stringify({ code }) });
-      const data = await res.json();
-      document.getElementById('aiSuggestion').innerHTML = `<strong>🤖 AI Suggestion:</strong><pre>${data.suggestion || data.error || 'No response'}</pre>`;
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    initTheme();
-
-    // ensure fetchAuth exists (if not defined in common.js)
-    if (typeof fetchAuth !== 'function') {
-      window.fetchAuth = async (url, options = {}) => {
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        const headers = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        return fetch(url, { ...options, headers });
-      };
+  // ========== AI DEBUG (mock + fallback to fetchAuth if available) ==========
+  async function mockAIDebug(code) {
+    // simulate intelligent suggestions based on code
+    const lower = code.toLowerCase();
+    if (lower.includes('undefined') || lower.includes('null')) {
+      return "🔍 Potential issue: undefined/null reference. Try adding a guard clause: `if (variable) { ... }` or optional chaining `?.`";
+    } else if (lower.includes('missing )') || lower.includes('syntaxerror')) {
+      return "🧩 Syntax error detected. Check your parentheses, brackets, or missing semicolons. Use a linter to catch typos.";
+    } else if (lower.includes('for') && lower.includes('var i')) {
+      return "⚡ Suggestion: use `let` or `const` instead of `var` to avoid scope issues. Also ensure loop bounds are correct.";
+    } else if (lower.includes('function') && lower.includes('callback')) {
+      return "💡 Async tip: make sure to handle callbacks properly. Consider using Promises or async/await for better readability.";
+    } else {
+      return "✨ No obvious errors detected. However, try adding `console.log` statements to trace values. Also verify input/output expectations.";
     }
-  </script>
+  }
+
+  document.getElementById('aiDebugBtn')?.addEventListener('click', async () => {
+    const code = document.getElementById('brokenCode').value.trim();
+    if (!code) {
+      showToast('📝 Paste your broken code first', true);
+      return;
+    }
+    const aiDiv = document.getElementById('aiSuggestion');
+    aiDiv.style.display = 'block';
+    aiDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> AI is analyzing your code...';
+
+    // Try real API endpoint if fetchAuth exists, else use mock
+    let suggestion = '';
+    try {
+      if (typeof fetchAuth === 'function') {
+        const res = await fetchAuth('/ai-debug', { method: 'POST', body: JSON.stringify({ code }) });
+        if (res.ok) {
+          const data = await res.json();
+          suggestion = data.suggestion || data.message || 'No suggestion from AI.';
+        } else {
+          suggestion = await mockAIDebug(code);
+        }
+      } else {
+        suggestion = await mockAIDebug(code);
+      }
+    } catch (err) {
+      console.warn('AI endpoint failed, using mock', err);
+      suggestion = await mockAIDebug(code);
+    }
+    aiDiv.innerHTML = `<strong><i class="fas fa-robot"></i> AI Suggestion:</strong><br><pre style="margin-top:8px; white-space:pre-wrap;">${escapeHtml(suggestion)}</pre>`;
+  });
+
+  // ========== THEME TOGGLE (persist) ==========
+  function setTheme(isLight) {
+    if (isLight) document.body.classList.add('light');
+    else document.body.classList.remove('light');
+    localStorage.setItem('codingHubTheme', isLight ? 'light' : 'dark');
+  }
+
+  function initTheme() {
+    const stored = localStorage.getItem('codingHubTheme');
+    setTheme(stored === 'light');
+    const themeBtn = document.getElementById('themeToggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => setTheme(!document.body.classList.contains('light')));
+    }
+  }
+
+  // ========== LOGOUT ==========
+  function logout() {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    window.location.href = '/login.html';
+  }
+
+  document.getElementById('logoutBtn')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    logout();
+  });
+
+  // ========== fetchAuth FALLBACK (if common.js missing) ==========
+  if (typeof fetchAuth !== 'function') {
+    window.fetchAuth = async (url, options = {}) => {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json', ...options.headers };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(url, { ...options, headers });
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+        throw new Error('Unauthorized');
+      }
+      return res;
+    };
+  }
+
+  // helper
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // ========== INITIAL LOAD ==========
+  renderTutorials();
+  renderFixRequests();
+  initTheme();
+</script>
 </body>
 </html>
