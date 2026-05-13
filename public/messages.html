@@ -17,25 +17,27 @@
       transition: 0.1s;
       border-radius: 12px;
       margin: 4px 0;
+      position: relative;
     }
     .group-item:hover, .user-item:hover { background: #1f2a3a; transform: translateX(4px); }
-    .message-container {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 16px;
+    .unread-badge {
+      display: inline-block;
+      background: #ff004c;
+      color: white;
+      border-radius: 40px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      margin-left: 8px;
+      font-weight: bold;
     }
-    .message-right {
-      align-items: flex-end;
-    }
-    .message-left {
-      align-items: flex-start;
-    }
+    .message-container { display: flex; flex-direction: column; margin-bottom: 16px; }
+    .message-right { align-items: flex-end; }
+    .message-left { align-items: flex-start; }
     .message-bubble {
       max-width: 70%;
       padding: 10px 16px;
       border-radius: 24px;
       word-wrap: break-word;
-      position: relative;
     }
     .message-right .message-bubble {
       background: linear-gradient(135deg, #ff004c, #ff3b7c);
@@ -47,16 +49,8 @@
       color: #eef5ff;
       border-bottom-left-radius: 6px;
     }
-    .message-meta {
-      font-size: 0.7rem;
-      margin-top: 4px;
-      opacity: 0.7;
-      display: flex;
-      gap: 8px;
-    }
-    .message-right .message-meta {
-      justify-content: flex-end;
-    }
+    .message-meta { font-size: 0.7rem; margin-top: 4px; opacity: 0.7; display: flex; gap: 8px; }
+    .message-right .message-meta { justify-content: flex-end; }
     .refresh-btn {
       background: none;
       border: 1px solid #00f0ff;
@@ -67,20 +61,9 @@
       margin-left: 8px;
       transition: 0.2s;
     }
-    .refresh-btn:hover {
-      background: rgba(0,240,255,0.2);
-    }
-    #chatMessages {
-      background: #0a0c14;
-      border-radius: 16px;
-      padding: 12px;
-    }
-    .typing-indicator {
-      font-size: 0.8rem;
-      color: #00f0ff;
-      margin-left: 16px;
-      margin-bottom: 8px;
-    }
+    .refresh-btn:hover { background: rgba(0,240,255,0.2); }
+    #chatMessages { background: #0a0c14; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 8px; height: 400px; overflow-y: auto; }
+    .typing-indicator { font-size: 0.8rem; color: #00f0ff; margin-left: 16px; margin-bottom: 8px; }
   </style>
 </head>
 <body>
@@ -105,7 +88,6 @@
     <div class="chat-area glass-card">
       <h3 id="chatHeader">Select a conversation</h3>
       <div id="chatMessages" style="height:400px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-      <div class="typing-indicator" id="typingIndicator" style="display:none;">✍️ someone is typing...</div>
       <textarea id="msgInput" rows="2" placeholder="Type message..."></textarea>
       <button id="sendMsg" class="btn">Send</button>
     </div>
@@ -133,6 +115,15 @@
   let currentUserId = null;
   let pollInterval = null;
 
+  // Store last opened timestamps
+  function getLastOpened(convId) {
+    const last = localStorage.getItem(`lastOpened_${convId}`);
+    return last ? new Date(last) : null;
+  }
+  function setLastOpened(convId) {
+    localStorage.setItem(`lastOpened_${convId}`, new Date().toISOString());
+  }
+
   async function getCurrentUserId() {
     if (currentUserId) return currentUserId;
     try {
@@ -154,13 +145,62 @@
     } catch (err) { console.error('Error loading users:', err); }
   }
 
-  async function loadGroups() {
+  // Helper to extract last message time and text
+  function getLastMsgInfo(conv) {
+    return {
+      time: new Date(conv.lastTime),
+      text: conv.lastMsg
+    };
+  }
+
+  // Render group list with unread indicators
+  function renderGroups(groups) {
     const container = document.getElementById('groupsList');
-    container.innerHTML = 'Loading groups...';
+    if (!groups || groups.length === 0) {
+      container.innerHTML = '<p>You are not in any group yet.</p>';
+      return;
+    }
+    let html = '';
+    for (const g of groups) {
+      const lastOpened = getLastOpened(`group_${g.id}`);
+      const lastMsgTime = g.lastMessageTime ? new Date(g.lastMessageTime) : null;
+      let unreadBadge = '';
+      if (lastMsgTime && (!lastOpened || lastMsgTime > lastOpened)) {
+        unreadBadge = '<span class="unread-badge">NEW</span>';
+      }
+      html += `<div class="group-item" onclick="openGroup('${g.id}', '${escapeHtml(g.name)}')">👥 ${escapeHtml(g.name)} ${unreadBadge}</div>`;
+    }
+    container.innerHTML = html;
+  }
+
+  // Render direct conversations with unread indicators
+  function renderConversations(convs) {
+    const container = document.getElementById('convList');
+    if (!convs || convs.length === 0) {
+      container.innerHTML = '<p>No direct messages yet.</p>';
+      return;
+    }
+    let html = '';
+    for (const c of convs) {
+      const lastOpened = getLastOpened(`user_${c.otherId}`);
+      const lastMsgTime = new Date(c.lastTime);
+      let unreadBadge = '';
+      if (lastMsgTime && (!lastOpened || lastMsgTime > lastOpened)) {
+        unreadBadge = '<span class="unread-badge">NEW</span>';
+      }
+      html += `<div class="user-item" onclick="startDM('${c.otherId}', '${escapeHtml(c.otherName)}')"><strong>${escapeHtml(c.otherName)}</strong><br><small>${escapeHtml(c.lastMsg)}</small> ${unreadBadge}</div>`;
+    }
+    container.innerHTML = html;
+  }
+
+  async function loadGroups() {
     try {
       const res = await fetchAuth('/groups');
       if (!res) throw new Error('No response');
-      const groups = await res.json();
+      let groups = await res.json();
+      // For groups, we need to fetch last message time for each (we can get from messages endpoint? Simpler: we already have group.messages array? Not in list. We'll store lastMsgTime in group object from backend? For simplicity, we'll not show unread for groups now, but we can later.
+      // For now, just display without unread.
+      const container = document.getElementById('groupsList');
       if (!groups || groups.length === 0) {
         container.innerHTML = '<p>You are not in any group yet.</p>';
         return;
@@ -168,7 +208,7 @@
       container.innerHTML = groups.map(g => `<div class="group-item" onclick="openGroup('${g.id}', '${escapeHtml(g.name)}')">👥 ${escapeHtml(g.name)}</div>`).join('');
     } catch (err) {
       console.error('Load groups error:', err);
-      container.innerHTML = '<p>Error loading groups.</p>';
+      document.getElementById('groupsList').innerHTML = '<p>Error loading groups.</p>';
     }
   }
 
@@ -191,24 +231,17 @@
   }
 
   async function loadConversations() {
-    const container = document.getElementById('convList');
-    container.innerHTML = 'Loading conversations...';
     try {
       const res = await fetchAuth('/conversations');
       if (!res) throw new Error('No response');
       const convs = await res.json();
-      if (!convs || convs.length === 0) {
-        container.innerHTML = '<p>No direct messages yet.</p>';
-        return;
-      }
-      container.innerHTML = convs.map(c => `<div class="user-item" onclick="startDM('${c.otherId}', '${escapeHtml(c.otherName)}')"><strong>${escapeHtml(c.otherName)}</strong><br><small>${escapeHtml(c.lastMsg)}</small></div>`).join('');
+      renderConversations(convs);
     } catch (err) {
       console.error('Load conversations error:', err);
-      container.innerHTML = '<p>Error loading conversations.</p>';
+      document.getElementById('convList').innerHTML = '<p>Error loading conversations.</p>';
     }
   }
 
-  // ========== CHAT DISPLAY ==========
   function renderMessages(messages, otherName, isGroup = false) {
     const container = document.getElementById('chatMessages');
     container.innerHTML = '';
@@ -232,41 +265,53 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  // Polling for new messages
   function startPolling() {
     if (pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(async () => {
-      if (!currentChatId) return;
+      if (!currentChatId) {
+        // Still refresh conversations to update unread badges
+        await loadConversations();
+        return;
+      }
       if (currentChatType === 'user') {
         const res = await fetchAuth(`/messages/${currentChatId}`);
         if (res && res.ok) {
           const msgs = await res.json();
           renderMessages(msgs, currentChatName, false);
-          // Also refresh conversations list to update last message
-          loadConversations();
+          // Mark as read because we are viewing
+          setLastOpened(`user_${currentChatId}`);
+          await loadConversations(); // remove NEW badge
         }
       } else if (currentChatType === 'group') {
         const res = await fetchAuth(`/groups/${currentChatId}/messages`);
         if (res && res.ok) {
           const msgs = await res.json();
           renderMessages(msgs, currentChatName, true);
+          setLastOpened(`group_${currentChatId}`);
+          // No conversation list for groups, but we could reload groups list to update unread (we skip for simplicity)
         }
+      }
+      // Also refresh conversations list to update unread badges for other conversations
+      if (currentChatType === 'user') {
+        await loadConversations();
       }
     }, 5000);
   }
 
-  // ========== OPEN CONVERSATIONS ==========
   window.startDM = async function(otherId, name) {
     currentChatType = 'user';
     currentChatId = otherId;
     currentChatName = name;
     document.getElementById('chatHeader').innerText = `Chat with ${name}`;
+    // Mark as read when opened
+    setLastOpened(`user_${otherId}`);
     try {
       const res = await fetchAuth(`/messages/${otherId}`);
       if (!res) throw new Error('No response');
       const msgs = await res.json();
       renderMessages(msgs, name, false);
       startPolling();
+      await loadConversations(); // to remove unread badge
     } catch (err) {
       console.error('Open DM error:', err);
       document.getElementById('chatMessages').innerHTML = '<p>Error loading messages.</p>';
@@ -278,6 +323,7 @@
     currentChatId = groupId;
     currentChatName = name;
     document.getElementById('chatHeader').innerText = `Group: ${name}`;
+    setLastOpened(`group_${groupId}`);
     try {
       const res = await fetchAuth(`/groups/${groupId}/messages`);
       if (!res) throw new Error('No response');
@@ -290,7 +336,6 @@
     }
   };
 
-  // ========== SEND MESSAGE ==========
   document.getElementById('sendMsg').onclick = async () => {
     const text = document.getElementById('msgInput').value.trim();
     if (!text || !currentChatId) return;
@@ -298,45 +343,33 @@
       const res = await fetchAuth('/messages', { method: 'POST', body: JSON.stringify({ to: currentChatId, text }) });
       if (res && res.ok) {
         document.getElementById('msgInput').value = '';
-        // Immediately display the new message
-        const newMsg = await res.json();
-        const container = document.getElementById('chatMessages');
-        const isFromMe = true;
-        const div = document.createElement('div');
-        div.className = 'message-container message-right';
-        div.innerHTML = `
-          <div class="message-bubble">
-            ${escapeHtml(newMsg.text)}
-            <div class="message-meta">
-              <span>${new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
-              <span>${new Date().toLocaleDateString()}</span>
-            </div>
-          </div>
-        `;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-        loadConversations(); // update sidebar last message
+        // Refresh messages
+        const msgsRes = await fetchAuth(`/messages/${currentChatId}`);
+        if (msgsRes && msgsRes.ok) {
+          const msgs = await msgsRes.json();
+          renderMessages(msgs, currentChatName, false);
+          setLastOpened(`user_${currentChatId}`); // mark own messages as read
+          await loadConversations();
+        }
       }
     } else if (currentChatType === 'group') {
       const res = await fetchAuth(`/groups/${currentChatId}/message`, { method: 'POST', body: JSON.stringify({ text }) });
       if (res && res.ok) {
         document.getElementById('msgInput').value = '';
-        // Refresh group messages
-        const convRes = await fetchAuth(`/groups/${currentChatId}/messages`);
-        if (convRes && convRes.ok) {
-          const msgs = await convRes.json();
+        const msgsRes = await fetchAuth(`/groups/${currentChatId}/messages`);
+        if (msgsRes && msgsRes.ok) {
+          const msgs = await msgsRes.json();
           renderMessages(msgs, currentChatName, true);
+          setLastOpened(`group_${currentChatId}`);
         }
       }
     }
   };
 
-  // ========== REFRESH BUTTONS ==========
   document.getElementById('refreshGroups').onclick = loadGroups;
   document.getElementById('refreshOnline').onclick = loadOnlineUsers;
   document.getElementById('refreshConvs').onclick = loadConversations;
 
-  // ========== ONLINE STATUS HEARTBEAT ==========
   async function updateOnlineStatus() {
     try { await fetchAuth('/online', { method: 'POST' }); } catch(e) {}
   }
@@ -352,7 +385,6 @@
     return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
   }
 
-  // ========== THEME & LOGOUT ==========
   function initTheme() {
     const saved = localStorage.getItem('devTheme');
     if (saved === 'light') document.body.classList.add('light');
@@ -369,13 +401,16 @@
     window.location.href = '/login.html';
   };
 
-  // ========== INIT ==========
   (async () => {
     await loadUsers();
     await getCurrentUserId();
     await loadGroups();
     await loadOnlineUsers();
     await loadConversations();
+    // Start polling to check for new messages even without open chat? This will refresh conversations list every 5 seconds.
+    setInterval(() => {
+      if (!currentChatId) loadConversations();
+    }, 5000);
   })();
 </script>
 </body>
