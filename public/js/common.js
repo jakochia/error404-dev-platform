@@ -38,50 +38,58 @@ function showToast(msg, isError = false) {
   setTimeout(() => toast.remove(), 3000);
 }
 
-// ========== NOTIFICATION FUNCTIONS ==========
+// ========== NOTIFICATION FUNCTIONS (fixed) ==========
+async function markAllNotificationsRead() {
+  const token = getToken();
+  if (!token) return;
+  const res = await fetch('/api/notifications', { headers: { 'Authorization': `Bearer ${token}` } });
+  if (res.ok) {
+    const notifs = await res.json();
+    const unreadIds = notifs.filter(n => !n.read).map(n => n.id);
+    for (const id of unreadIds) {
+      await fetch(`/api/notifications/${id}/read`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
+    }
+    loadNotifications(); // refresh list
+  }
+}
+
 async function loadNotifications() {
   const token = getToken();
   if (!token) return;
   const res = await fetch('/api/notifications', { headers: { 'Authorization': `Bearer ${token}` } });
   if (res.ok) {
     const notifs = await res.json();
-    const unread = notifs.filter(n => !n.read).length;
+    const unread = notifs.filter(n => !n.read);
     const badge = document.getElementById('notifBadge');
-    if (badge) badge.innerText = unread > 0 ? unread : '';
+    if (badge) badge.innerText = unread.length > 0 ? unread.length : '';
     const container = document.getElementById('notifList');
     if (container) {
-      if (notifs.length === 0) {
-        container.innerHTML = '<div style="padding:10px;">No notifications</div>';
+      if (unread.length === 0) {
+        container.innerHTML = '<div style="padding:10px;">No new notifications</div>';
       } else {
-        container.innerHTML = notifs.map(n => `
-          <div class="notif-item ${n.read ? '' : 'unread'}" data-id="${n.id}">
+        container.innerHTML = unread.map(n => `
+          <div class="notif-item unread" data-id="${n.id}">
             <div>${n.message}</div>
             <div class="notif-time">${new Date(n.createdAt).toLocaleString()}</div>
           </div>
         `).join('');
       }
-      // Mark as read when clicked
+      // Attach click handlers to mark as read and remove from UI
       document.querySelectorAll('.notif-item').forEach(el => {
         el.addEventListener('click', async () => {
           const id = el.dataset.id;
           await fetch(`/api/notifications/${id}/read`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
-          loadNotifications();
+          loadNotifications(); // refresh list
         });
       });
     }
   }
 }
 
-function toggleNotifDropdown() {
-  const dropdown = document.getElementById('notifDropdown');
-  if (dropdown) dropdown.classList.toggle('show');
-}
-
-// Polling for notifications (updates badge and dropdown if open)
-let notifInterval = null;
+// Start polling every 15 seconds for new notifications (updates badge only)
 function startNotificationPolling() {
-  if (notifInterval) clearInterval(notifInterval);
-  notifInterval = setInterval(async () => {
+  if (window.notifInterval) clearInterval(window.notifInterval);
+  window.notifInterval = setInterval(async () => {
     const token = getToken();
     if (!token) return;
     const res = await fetch('/api/notifications', { headers: { Authorization: `Bearer ${token}` } });
@@ -90,11 +98,9 @@ function startNotificationPolling() {
       const unread = notifs.filter(n => !n.read).length;
       const badge = document.getElementById('notifBadge');
       if (badge) badge.innerText = unread > 0 ? unread : '';
-      // Refresh dropdown if open
+      // Optionally refresh dropdown if open
       const dropdown = document.getElementById('notifDropdown');
-      if (dropdown && dropdown.classList.contains('show')) {
-        loadNotifications();
-      }
+      if (dropdown && dropdown.classList.contains('show')) loadNotifications();
     }
   }, 15000);
 }

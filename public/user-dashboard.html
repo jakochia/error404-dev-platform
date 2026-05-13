@@ -795,6 +795,14 @@
       </div>
     </div>
 
+    <div id="notifDropdown" class="notif-dropdown">
+  <div style="padding:12px; border-bottom:1px solid #ff3b7c; display: flex; justify-content: space-between;">
+    <strong><i class="fas fa-bell"></i> Notifications</strong>
+    <button id="markAllReadBtn" style="background:none; border:none; color:#00f0ff; cursor:pointer; font-size:0.8rem;">Mark all as read</button>
+  </div>
+  <div id="notifList">Loading...</div>
+</div>
+
     <!-- FOOTER -->
     <div class="footer">
       <div class="footer-grid">
@@ -1186,6 +1194,7 @@
   document.getElementById('ctaFeedBtn')?.addEventListener('click', (e) => { e.preventDefault(); activateTab('feed'); });
   document.getElementById('ctaMemeBtn')?.addEventListener('click', (e) => { e.preventDefault(); activateTab('memes'); });
   document.getElementById('supportLink')?.addEventListener('click', (e) => { e.preventDefault(); alert("📧 Support: support@404dev.com\nWe'll get back to you within 24h."); });
+  document.getElementById('markAllReadBtn')?.addEventListener('click', markAllNotificationsRead);
   function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
   (async () => {
     await loadProfile();
